@@ -14,7 +14,7 @@ export default function HatStudio() {
   const photoImgRef = useRef<HTMLImageElement | null>(null);
   const hatImgRef = useRef<HTMLImageElement | null>(null);
 
-  // Handle photo upload
+  // Upload user photo
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -24,7 +24,7 @@ export default function HatStudio() {
     }
   };
 
-  // Handle hat drag
+  // Drag hat
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     setDragging(true);
     setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
@@ -37,7 +37,7 @@ export default function HatStudio() {
 
   const handleMouseUp = () => setDragging(false);
 
-  // Handle download
+  // Download final result
   const handleDownload = () => {
     const photo = photoImgRef.current;
     const hatEl = hatImgRef.current;
@@ -47,18 +47,24 @@ export default function HatStudio() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    canvas.width = photo.naturalWidth;
-    canvas.height = photo.naturalHeight;
+    // Match canvas with display size
+    const displayWidth = photo.width;
+    const displayHeight = photo.height;
+    canvas.width = displayWidth;
+    canvas.height = displayHeight;
 
-    ctx.drawImage(photo, 0, 0);
-    ctx.drawImage(
-      hatEl,
-      canvas.width / 2 - (hatEl.width * scale) / 2 + offset.x,
-      canvas.height * 0.25 + offset.y,
-      hatEl.width * scale,
-      hatEl.height * scale
-    );
+    // Draw photo
+    ctx.drawImage(photo, 0, 0, displayWidth, displayHeight);
 
+    // Draw hat at the same position and scale as preview
+    const hatWidth = hatEl.width * scale;
+    const hatHeight = hatEl.height * scale;
+    const hatX = displayWidth / 2 - hatWidth / 2 + offset.x;
+    const hatY = displayHeight * 0.25 + offset.y;
+
+    ctx.drawImage(hatEl, hatX, hatY, hatWidth, hatHeight);
+
+    // Trigger download
     const link = document.createElement("a");
     link.download = "kite_hat_result.png";
     link.href = canvas.toDataURL("image/png");
@@ -66,14 +72,14 @@ export default function HatStudio() {
   };
 
   return (
-    <main className="min-h-screen bg-cream text-brown px-4 py-12">
+    <main className="min-h-screen bg-cream text-brown px-4 pt-28 md:pt-32 pb-16 transition-all">
       <div className="max-w-3xl mx-auto text-center">
         <h1 className="font-playfair text-4xl font-bold mb-2">Kite Hat Studio</h1>
         <p className="text-sm mb-8">
           Upload your photo, choose a hat, drag and resize it, then download your result.
         </p>
 
-        {/* Upload photo */}
+        {/* Upload Photo */}
         <input
           type="file"
           accept="image/*"
@@ -123,7 +129,7 @@ export default function HatStudio() {
           )}
         </div>
 
-        {/* Controls */}
+        {/* Control Buttons */}
         <div className="flex justify-center gap-3 mt-6 flex-wrap">
           <button
             onClick={() => setHat(hat === "black" ? "brown" : "black")}

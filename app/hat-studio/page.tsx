@@ -27,41 +27,41 @@ export default function HatStudioPage() {
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (dragStart) {
-      setOffset({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
-    }
+    if (dragStart) setOffset({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
   };
 
   const handleMouseUp = () => setDragStart(null);
+  const handleZoom = (zoomIn: boolean) =>
+    setScale((prev) => Math.max(0.3, zoomIn ? prev + 0.1 : prev - 0.1));
 
-  const handleZoom = (zoomIn: boolean) => {
-    setScale((prev) => Math.max(0.2, zoomIn ? prev + 0.1 : prev - 0.1));
-  };
+  const handleHatChange = () => setHat((prev) => (prev === "brown" ? "black" : "brown"));
 
-  const handleHatChange = () => {
-    setHat((prev) => (prev === "brown" ? "black" : "brown"));
-  };
-
-  // ✅ Generate Preview using visible container size (accurate)
+  // 🎯 Gunakan pixel ratio supaya tidak blur & posisi akurat
   const generateCanvas = () => {
     const container = containerRef.current;
     const photo = photoImgRef.current;
     const hatEl = hatImgRef.current;
     if (!container || !photo || !hatEl) return null;
 
+    const ratio = window.devicePixelRatio || 1;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
 
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = width * ratio;
+    canvas.height = height * ratio;
+    ctx.scale(ratio, ratio);
 
-    // draw background image
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    // gambar foto
     ctx.drawImage(photo, 0, 0, width, height);
 
-    // draw hat overlay (using actual offset from visual scale)
+    // gambar topi
     const hatWidth = hatEl.width * scale * 0.6;
     const hatHeight = hatEl.height * scale * 0.6;
     const hatX = width / 2 - hatWidth / 2 + offset.x;
@@ -93,7 +93,7 @@ export default function HatStudioPage() {
       </p>
 
       <div className="flex flex-col lg:flex-row gap-10 justify-center items-start">
-        {/* Left: Editor */}
+        {/* Area utama */}
         <div
           ref={containerRef}
           className="relative w-72 h-96 bg-cream rounded-xl shadow flex items-center justify-center overflow-hidden"
@@ -126,7 +126,7 @@ export default function HatStudioPage() {
           )}
         </div>
 
-        {/* Right: Controls & Preview */}
+        {/* Kontrol */}
         <div className="flex flex-col items-center gap-3">
           <input type="file" accept="image/*" onChange={handleUpload} />
           <button

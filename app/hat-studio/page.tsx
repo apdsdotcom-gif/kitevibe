@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 
 export default function HatStudio() {
   const [photoURL, setPhotoURL] = useState<string | null>(null);
@@ -13,34 +13,34 @@ export default function HatStudio() {
   const photoRef = useRef<HTMLImageElement | null>(null);
   const hatRef = useRef<HTMLImageElement | null>(null);
 
+  // Upload photo
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) setPhotoURL(URL.createObjectURL(file));
   };
 
+  // Drag
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     setDragging(true);
     setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
   };
-
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!dragging) return;
-    setOffset({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y,
-    });
+    setOffset({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
   };
-
   const handleMouseUp = () => setDragging(false);
 
+  // Zoom in/out
   const handleZoom = (direction: "in" | "out") => {
     setScale((prev) => Math.max(0.5, Math.min(2, prev + (direction === "in" ? 0.1 : -0.1))));
   };
 
+  // Change hat color
   const handleChangeHat = () => {
     setHatType((prev) => (prev === "brown" ? "black" : "brown"));
   };
 
+  // Create preview
   const handlePreview = () => {
     const photo = photoRef.current;
     const hat = hatRef.current;
@@ -50,23 +50,26 @@ export default function HatStudio() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const width = photo.width;
-    const height = photo.height;
+    const width = photo.naturalWidth;
+    const height = photo.naturalHeight;
     canvas.width = width;
     canvas.height = height;
 
+    // Draw photo
     ctx.drawImage(photo, 0, 0, width, height);
 
-    const hatWidth = hat.width * scale;
-    const hatHeight = hat.height * scale;
-    const x = width / 2 - hatWidth / 2 + offset.x;
-    const y = height / 2 - hatHeight / 2 + offset.y;
-    ctx.drawImage(hat, x, y, hatWidth, hatHeight);
+    // Calculate scaled hat position
+    const hatWidth = hat.naturalWidth * scale;
+    const hatHeight = hat.naturalHeight * scale;
+    const x = width / 2 - hatWidth / 2 + offset.x * (width / 320);
+    const y = height / 2 - hatHeight / 2 + offset.y * (height / 400);
 
+    ctx.drawImage(hat, x, y, hatWidth, hatHeight);
     const resultURL = canvas.toDataURL("image/png");
     setPreviewURL(resultURL);
   };
 
+  // Download image
   const handleDownload = () => {
     if (!previewURL) return;
     const link = document.createElement("a");
@@ -79,11 +82,11 @@ export default function HatStudio() {
     <main className="max-w-6xl mx-auto px-6 py-20">
       <h1 className="text-4xl font-bold text-center mb-6 font-playfair">Kite Hat Studio</h1>
       <p className="text-center mb-10 text-gray-700">
-        Upload your photo, choose a hat, adjust the position, preview, and download your result.
+        Upload your photo, choose a hat, drag and resize it, preview, then download your result.
       </p>
 
-      <div className="flex flex-col md:flex-row gap-8 justify-center">
-        {/* Left side: Editor */}
+      <div className="flex flex-col lg:flex-row justify-center items-start gap-10">
+        {/* Left Section - Editor */}
         <div
           className="relative border border-gray-300 rounded-xl p-4 shadow bg-[#FAF5EE]"
           onMouseDown={handleMouseDown}
@@ -120,7 +123,7 @@ export default function HatStudio() {
           <div className="mt-4 flex flex-wrap gap-2 justify-center">
             <button
               onClick={handleChangeHat}
-              className={`px-4 py-2 rounded-full text-white ${
+              className={`px-4 py-2 rounded-full text-white transition ${
                 hatType === "brown" ? "bg-[#B08968]" : "bg-black"
               }`}
             >
@@ -147,7 +150,7 @@ export default function HatStudio() {
           </div>
         </div>
 
-        {/* Right side: Preview */}
+        {/* Right Section - Preview */}
         <div className="flex flex-col items-center justify-center w-[340px]">
           <h2 className="text-2xl font-semibold font-playfair mb-3">Preview</h2>
           {previewURL ? (

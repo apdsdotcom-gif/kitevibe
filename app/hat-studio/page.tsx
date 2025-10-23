@@ -1,45 +1,36 @@
 "use client";
+import { useRef, useState } from "react";
 
-import { useState, useRef, useEffect } from "react";
+export default function HatStudio() {
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
+  const photoImgRef = useRef<HTMLImageElement | null>(null);
+  const hatImgRef = useRef<HTMLImageElement | null>(null);
+  const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
-export default function Page() {
   const [photoDataURL, setPhotoDataURL] = useState<string | null>(null);
   const [hatType, setHatType] = useState<"brown" | "black">("brown");
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
-  const [previewURL, setPreviewURL] = useState<string | null>(null);
-  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
-
-  const photoImgRef = useRef<HTMLImageElement | null>(null);
-  const hatImgRef = useRef<HTMLImageElement | null>(null);
+  const [previewReady, setPreviewReady] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => setPhotoDataURL(ev.target?.result as string);
+    reader.onload = (event) => {
+      setPhotoDataURL(event.target?.result as string);
+      setPreviewReady(false);
+    };
     reader.readAsDataURL(file);
   };
 
-  useEffect(() => {
-    if (photoImgRef.current) {
-      const img = photoImgRef.current;
-      img.onload = () => {
-        setImageSize({
-          width: img.naturalWidth,
-          height: img.naturalHeight,
-        });
-      };
-    }
-  }, [photoDataURL]);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleMouseDown = (e: React.MouseEvent<HTMLImageElement>) => {
     setDragging(true);
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
-  const handleMouseUp = () => setDragging(false);
-  const handleMouseMove = (e: React.MouseEvent) => {
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLImageElement>) => {
     if (!dragging) return;
     setOffset((prev) => ({
       x: prev.x + e.movementX,
@@ -47,168 +38,154 @@ export default function Page() {
     }));
   };
 
-  const handleZoomIn = () => setScale((prev) => prev + 0.1);
-  const handleZoomOut = () => setScale((prev) => Math.max(0.2, prev - 0.1));
+  const handleMouseUp = () => setDragging(false);
+
+  const handleZoom = (direction: "in" | "out") => {
+    setScale((prev) => {
+      const newScale = direction === "in" ? prev + 0.1 : prev - 0.1;
+      return Math.max(0.3, Math.min(newScale, 3));
+    });
+  };
+
+  const handlePreview = () => {
+    const photo = photoImgRef.current;
+    const hat = hatImgRef.current;
+    const canvas = previewCanvasRef.current;
+    if (!photo || !hat || !canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const width = photo.naturalWidth;
+    const height = photo.naturalHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    ctx.drawImage(photo, 0, 0, width, height);
+
+    const hatWidth = hat.naturalWidth * scale;
+    const hatHeight = hat.naturalHeight * scale;
+    const x = width / 2 - hatWidth / 2 + offset.x;
+    const y = height / 2 - hatHeight / 2 + offset.y;
+
+    ctx.drawImage(hat, x, y, hatWidth, hatHeight);
+    setPreviewReady(true);
+  };
+
+  const handleDownload = () => {
+    if (!previewCanvasRef.current) return;
+    const link = document.createElement("a");
+    link.download = "kite-hat-result.png";
+    link.href = previewCanvasRef.current.toDataURL("image/png");
+    link.click();
+  };
 
   const handleChangeHat = () => {
     setHatType((prev) => (prev === "brown" ? "black" : "brown"));
   };
 
-  // ✅ FIXED: High-resolution preview and download (crystal clear)
-  const generateCanvas = (multiplier = 1) => {
-    const photoEl = photoImgRef.current;
-    const hatEl = hatImgRef.current;
-    if (!photoEl || !hatEl) return null;
-
-    const width = photoEl.naturalWidth * multiplier;
-    const height = photoEl.naturalHeight * multiplier;
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return null;
-
-    ctx.drawImage(photoEl, 0, 0, width, height);
-
-    const ratioX = width / photoEl.clientWidth;
-    const ratioY = height / photoEl.clientHeight;
-
-    const hatRect = hatEl.getBoundingClientRect();
-    const photoRect = photoEl.getBoundingClientRect();
-
-    const hatX = (hatRect.left - photoRect.left) * ratioX;
-    const hatY = (hatRect.top - photoRect.top) * ratioY;
-    const hatW = hatRect.width * ratioX;
-    const hatH = hatRect.height * ratioY;
-
-    ctx.drawImage(hatEl, hatX, hatY, hatW, hatH);
-    return canvas;
-  };
-
-  const handlePreview = () => {
-    const canvas = generateCanvas(2); // 🔍 render 2x sharper
-    if (!canvas) return;
-    const dataURL = canvas.toDataURL("image/png", 1.0);
-    setPreviewURL(dataURL);
-  };
-
-  const handleDownload = () => {
-    const canvas = generateCanvas(1); // original sharp
-    if (!canvas) return;
-    const link = document.createElement("a");
-    link.download = "kite-hat-result.png";
-    link.href = canvas.toDataURL("image/png", 1.0);
-    link.click();
+  const handleReset = () => {
+    setPhotoDataURL(null);
+    setPreviewReady(false);
+    setOffset({ x: 0, y: 0 });
+    setScale(1);
   };
 
   return (
-    <main className="min-h-screen py-20 px-4 bg-[#FDF9F3] text-center">
-      <h1 className="font-playfair text-4xl mb-2">Kite Hat Studio</h1>
-      <p className="text-sm mb-8">
+    <main className="min-h-screen flex flex-col items-center bg-[#FDFBF9] text-center">
+      <h1 className="text-4xl font-playfair font-bold mt-16 mb-2">Kite Hat Studio</h1>
+      <p className="text-sm text-gray-700 mb-8 max-w-md">
         Upload your photo, adjust your hat preview, then download your final result.
       </p>
 
-      <div className="flex flex-col md:flex-row justify-center items-start gap-8">
-        {/* Main Editor */}
-        <div
-          className="relative bg-white/80 rounded-xl shadow-md p-4 w-[300px] flex items-center justify-center overflow-hidden"
-          style={{
-            height:
-              imageSize.height && imageSize.width
-                ? `${(imageSize.height / imageSize.width) * 300}px`
-                : "400px",
-          }}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        >
-          {!photoDataURL ? (
-            <label className="cursor-pointer text-sm bg-[#B17C4A] text-white px-4 py-2 rounded-md shadow hover:bg-[#a06e3f]">
-              Browse...
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </label>
-          ) : (
+      <div className="flex flex-col md:flex-row gap-10 justify-center items-start">
+        <div className="relative bg-[#f3ece3] p-4 rounded-2xl shadow w-[300px] h-[350px] flex justify-center items-center overflow-hidden">
+          {photoDataURL ? (
             <>
               <img
                 ref={photoImgRef}
                 src={photoDataURL}
                 alt="Uploaded"
-                className="absolute inset-0 w-full h-full object-contain rounded-md"
+                className="absolute w-full h-full object-cover rounded-lg"
               />
               <img
                 ref={hatImgRef}
                 src={`/images/hat-${hatType}.png`}
                 alt="Hat"
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
                 style={{
                   transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-                  transformOrigin: "center",
-                  cursor: "grab",
+                  transition: dragging ? "none" : "transform 0.2s ease",
+                  cursor: "move",
                 }}
-                className="absolute top-1/3 left-1/2 w-[180px] select-none"
-                onMouseDown={handleMouseDown}
-                draggable={false}
+                className="absolute w-40"
               />
             </>
+          ) : (
+            <label className="bg-[#a67c52] text-white px-6 py-3 rounded-lg shadow cursor-pointer hover:bg-[#8c6239] transition">
+              Browse...
+              <input
+                type="file"
+                accept="image/*"
+                ref={photoInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
           )}
         </div>
 
-        {/* Control Panel */}
-        <div className="flex flex-col items-center gap-3">
-          {photoDataURL && (
-            <>
-              <button
-                onClick={handleChangeHat}
-                className={`px-4 py-2 rounded-md text-white font-medium shadow ${
-                  hatType === "brown"
-                    ? "bg-[#B17C4A] hover:bg-[#a06e3f]"
-                    : "bg-[#333] hover:bg-[#222]"
-                }`}
-              >
-                Change Hat ({hatType})
-              </button>
-
-              <div className="flex gap-2">
-                <button onClick={handleZoomIn} className="px-3 py-1 border rounded-md text-sm">
-                  Zoom In
-                </button>
-                <button onClick={handleZoomOut} className="px-3 py-1 border rounded-md text-sm">
-                  Zoom Out
-                </button>
-              </div>
-
-              <div className="flex gap-2 mt-2">
-                <button
-                  onClick={handlePreview}
-                  className="bg-[#B17C4A] text-white px-4 py-2 rounded-md hover:bg-[#a06e3f]"
-                >
-                  Preview Result
-                </button>
-                <button
-                  onClick={handleDownload}
-                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
-                >
-                  Download PNG
-                </button>
-              </div>
-
-              {previewURL && (
-                <div className="mt-4 border rounded-lg p-2 bg-white shadow-md">
-                  <h2 className="text-sm font-semibold mb-1">Preview</h2>
-                  <img
-                    src={previewURL}
-                    alt="Preview"
-                    className="object-contain w-[300px] rounded-md"
-                  />
-                </div>
-              )}
-            </>
-          )}
+        {/* Sidebar kanan */}
+        <div className="flex flex-col gap-3 items-center">
+          <button
+            onClick={handleChangeHat}
+            className={`px-5 py-2 rounded-lg text-white font-medium transition ${
+              hatType === "brown" ? "bg-[#a67c52]" : "bg-[#3a3a3a]"
+            }`}
+          >
+            Change Hat ({hatType})
+          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleZoom("in")}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
+            >
+              Zoom In
+            </button>
+            <button
+              onClick={() => handleZoom("out")}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
+            >
+              Zoom Out
+            </button>
+          </div>
+          <button
+            onClick={handlePreview}
+            className="bg-[#d79a61] text-white px-6 py-2 rounded-lg hover:bg-[#c78950] transition"
+          >
+            Preview Result
+          </button>
+          <button
+            onClick={handleDownload}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
+          >
+            Download PNG
+          </button>
+          <button
+            onClick={handleReset}
+            className="bg-[#EED2B3] text-[#4B2E05] px-6 py-2 rounded-lg mt-2 hover:bg-[#e4c59e] transition"
+          >
+            Start New Design
+          </button>
         </div>
+
+        {previewReady && (
+          <div className="flex flex-col items-center">
+            <h2 className="text-lg font-semibold mb-2">Preview</h2>
+            <canvas ref={previewCanvasRef} className="w-[300px] h-[350px] rounded-xl shadow-md" />
+          </div>
+        )}
       </div>
     </main>
   );

@@ -10,6 +10,7 @@ export default function HatStudio() {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [previewURL, setPreviewURL] = useState<string | null>(null);
 
   const photoImgRef = useRef<HTMLImageElement | null>(null);
   const hatImgRef = useRef<HTMLImageElement | null>(null);
@@ -24,7 +25,7 @@ export default function HatStudio() {
     }
   };
 
-  // Drag hat movement
+  // Drag hat
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     setDragging(true);
     setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
@@ -37,8 +38,8 @@ export default function HatStudio() {
 
   const handleMouseUp = () => setDragging(false);
 
-  // ✅ Fixed: download result matches exactly what user sees
-  const handleDownload = () => {
+  // Generate preview
+  const handlePreview = () => {
     const photo = photoImgRef.current;
     const hatEl = hatImgRef.current;
     if (!photo || !hatEl) return;
@@ -47,7 +48,6 @@ export default function HatStudio() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Use actual displayed size, not natural image size
     const displayWidth = photo.clientWidth;
     const displayHeight = photo.clientHeight;
     canvas.width = displayWidth;
@@ -64,10 +64,16 @@ export default function HatStudio() {
 
     ctx.drawImage(hatEl, hatX, hatY, hatWidth, hatHeight);
 
-    // Save as PNG
+    const dataURL = canvas.toDataURL("image/png");
+    setPreviewURL(dataURL);
+  };
+
+  // Download from preview
+  const handleDownload = () => {
+    if (!previewURL) return;
     const link = document.createElement("a");
     link.download = "kite_hat_result.png";
-    link.href = canvas.toDataURL("image/png");
+    link.href = previewURL;
     link.click();
   };
 
@@ -76,7 +82,7 @@ export default function HatStudio() {
       <div className="max-w-3xl mx-auto text-center">
         <h1 className="font-playfair text-4xl font-bold mb-2">Kite Hat Studio</h1>
         <p className="text-sm mb-8">
-          Upload your photo, choose a hat, drag and resize it, then download your result.
+          Upload your photo, choose a hat, drag and resize it, preview, then download your result.
         </p>
 
         {/* Upload Photo */}
@@ -129,11 +135,15 @@ export default function HatStudio() {
           )}
         </div>
 
-        {/* Controls */}
+        {/* Control Buttons */}
         <div className="flex justify-center gap-3 mt-6 flex-wrap">
           <button
             onClick={() => setHat(hat === "black" ? "brown" : "black")}
-            className="px-4 py-2 bg-brown text-cream rounded-full shadow hover:opacity-90 transition"
+            className={`px-4 py-2 rounded-full shadow hover:opacity-90 transition ${
+              hat === "brown"
+                ? "bg-[#7b4b2a] text-cream"
+                : "bg-black text-cream"
+            }`}
           >
             Change Hat ({hat})
           </button>
@@ -153,13 +163,33 @@ export default function HatStudio() {
           </button>
 
           <button
-            onClick={handleDownload}
+            onClick={handlePreview}
             disabled={!photoDataURL}
             className="px-4 py-2 bg-orange-700 text-cream rounded-full shadow hover:bg-orange-800 transition disabled:opacity-50"
+          >
+            Preview Result
+          </button>
+
+          <button
+            onClick={handleDownload}
+            disabled={!previewURL}
+            className="px-4 py-2 bg-green-700 text-cream rounded-full shadow hover:bg-green-800 transition disabled:opacity-50"
           >
             Download PNG
           </button>
         </div>
+
+        {/* Final Preview */}
+        {previewURL && (
+          <div className="mt-10">
+            <h2 className="font-playfair text-2xl mb-3">Preview</h2>
+            <img
+              src={previewURL}
+              alt="Preview Result"
+              className="mx-auto rounded-xl shadow-md w-72 h-auto border border-brown"
+            />
+          </div>
+        )}
       </div>
     </main>
   );

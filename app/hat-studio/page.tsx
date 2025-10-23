@@ -51,7 +51,7 @@ export default function Page() {
     const hatEl = hatImgRef.current;
     if (!photoEl || !hatEl) return;
 
-    // Buat canvas dengan ukuran asli elemen tampilan
+    // Ambil ukuran asli area foto
     const rect = photoEl.getBoundingClientRect();
     const canvas = document.createElement("canvas");
     canvas.width = rect.width;
@@ -59,20 +59,14 @@ export default function Page() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Gambar foto dasar
+    // Gambar foto
     ctx.drawImage(photoEl, 0, 0, rect.width, rect.height);
 
-    // Gambar topi sesuai posisi dan skala di layar
+    // Gambar topi dengan posisi & skala sesuai layar
     const hatRect = hatEl.getBoundingClientRect();
     const offsetX = hatRect.left - rect.left;
     const offsetY = hatRect.top - rect.top;
-    ctx.drawImage(
-      hatEl,
-      offsetX,
-      offsetY,
-      hatRect.width,
-      hatRect.height
-    );
+    ctx.drawImage(hatEl, offsetX, offsetY, hatRect.width, hatRect.height);
 
     // Simpan hasil ke PNG
     const link = document.createElement("a");
@@ -110,9 +104,8 @@ export default function Page() {
         Upload your photo, adjust your hat preview, then download your final result.
       </p>
 
-      {/* Upload */}
       <div className="flex flex-col md:flex-row justify-center items-start gap-8">
-        {/* Left: Editing area */}
+        {/* Area edit foto */}
         <div
           className="relative mx-auto bg-white/80 rounded-xl shadow-md p-4 w-[300px] h-[400px] flex items-center justify-center overflow-hidden"
           onMouseMove={handleMouseMove}
@@ -154,7 +147,7 @@ export default function Page() {
           )}
         </div>
 
-        {/* Right: Controls + Preview */}
+        {/* Area kontrol dan preview */}
         <div className="flex flex-col items-center gap-3">
           {photoDataURL && (
             <>
@@ -168,6 +161,7 @@ export default function Page() {
               >
                 Change Hat ({hatType})
               </button>
+
               <div className="flex gap-2">
                 <button
                   onClick={handleZoomIn}
@@ -201,11 +195,13 @@ export default function Page() {
               {previewURL && (
                 <div className="mt-4 border rounded-lg p-2 bg-white shadow-md">
                   <h2 className="text-sm font-semibold mb-1">Preview</h2>
-                  <img
-                    src={previewURL}
-                    alt="Preview"
-                    className="w-[200px] h-auto rounded-md"
-                  />
+                  <div className="w-[300px] h-[400px] overflow-hidden flex items-center justify-center bg-[#fdfdfd] rounded-md">
+                    <img
+                      src={previewURL}
+                      alt="Preview"
+                      className="object-contain w-full h-full"
+                    />
+                  </div>
                 </div>
               )}
             </>

@@ -47,10 +47,18 @@ export default function Page() {
     }));
   };
 
-  const handleZoomIn = () => setScale((prev) => prev + 0.1);
-  const handleZoomOut = () => setScale((prev) => Math.max(0.2, prev - 0.1));
+  const handleZoomIn = () => {
+    if (!photoDataURL) return alert("Please upload a photo first.");
+    setScale((prev) => prev + 0.1);
+  };
+
+  const handleZoomOut = () => {
+    if (!photoDataURL) return alert("Please upload a photo first.");
+    setScale((prev) => Math.max(0.2, prev - 0.1));
+  };
 
   const handleChangeHat = () => {
+    if (!photoDataURL) return alert("Please upload a photo first.");
     setHatType((prev) => (prev === "brown" ? "black" : "brown"));
   };
 
@@ -86,6 +94,7 @@ export default function Page() {
   };
 
   const handlePreview = () => {
+    if (!photoDataURL) return alert("Please upload a photo first.");
     const canvas = generateCanvas(2);
     if (!canvas) return;
     const dataURL = canvas.toDataURL("image/png", 1.0);
@@ -93,6 +102,7 @@ export default function Page() {
   };
 
   const handleDownload = () => {
+    if (!photoDataURL) return alert("Please upload a photo first.");
     const canvas = generateCanvas(1);
     if (!canvas) return;
     const link = document.createElement("a");
@@ -132,25 +142,15 @@ export default function Page() {
           onMouseLeave={handleMouseUp}
         >
           {!photoDataURL ? (
-            <div className="flex flex-col items-center gap-3">
-              <label className="cursor-pointer text-sm bg-[#B17C4A] text-white px-4 py-2 rounded-md shadow hover:bg-[#a06e3f]">
-                Browse...
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </label>
-
-              {/* Start New Design shown from the beginning */}
-              <button
-                onClick={handleReset}
-                className="bg-[#B17C4A] text-white px-4 py-2 rounded-md hover:bg-[#a06e3f]"
-              >
-                Start New Design
-              </button>
-            </div>
+            <label className="cursor-pointer text-sm bg-[#B17C4A] text-white px-4 py-2 rounded-md shadow hover:bg-[#a06e3f]">
+              Browse...
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
           ) : (
             <>
               <img
@@ -178,67 +178,64 @@ export default function Page() {
 
         {/* Control Panel */}
         <div className="flex flex-col items-center gap-3">
-          {photoDataURL && (
-            <>
-              <button
-                onClick={handleChangeHat}
-                className={`px-4 py-2 rounded-md text-white font-medium shadow ${
-                  hatType === "brown"
-                    ? "bg-[#B17C4A] hover:bg-[#a06e3f]"
-                    : "bg-[#333] hover:bg-[#222]"
-                }`}
-              >
-                Change Hat ({hatType})
-              </button>
+          {/* Always visible buttons */}
+          <button
+            onClick={handleChangeHat}
+            className={`px-4 py-2 rounded-md text-white font-medium shadow ${
+              hatType === "brown"
+                ? "bg-[#B17C4A] hover:bg-[#a06e3f]"
+                : "bg-[#333] hover:bg-[#222]"
+            }`}
+          >
+            Change Hat ({hatType})
+          </button>
 
-              <div className="flex gap-2">
-                <button
-                  onClick={handleZoomIn}
-                  className="px-3 py-1 border rounded-md text-sm"
-                >
-                  Zoom In
-                </button>
-                <button
-                  onClick={handleZoomOut}
-                  className="px-3 py-1 border rounded-md text-sm"
-                >
-                  Zoom Out
-                </button>
-              </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleZoomIn}
+              className="px-3 py-1 border rounded-md text-sm"
+            >
+              Zoom In
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="px-3 py-1 border rounded-md text-sm"
+            >
+              Zoom Out
+            </button>
+          </div>
 
-              <div className="flex gap-2 mt-2">
-                <button
-                  onClick={handlePreview}
-                  className="bg-[#B17C4A] text-white px-4 py-2 rounded-md hover:bg-[#a06e3f]"
-                >
-                  Preview Result
-                </button>
-                <button
-                  onClick={handleDownload}
-                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
-                >
-                  Download PNG
-                </button>
-              </div>
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={handlePreview}
+              className="bg-[#B17C4A] text-white px-4 py-2 rounded-md hover:bg-[#a06e3f]"
+            >
+              Preview Result
+            </button>
+            <button
+              onClick={handleDownload}
+              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+            >
+              Download PNG
+            </button>
+          </div>
 
-              <button
-                onClick={handleReset}
-                className="mt-2 bg-[#B17C4A] text-white px-4 py-2 rounded-md hover:bg-[#a06e3f]"
-              >
-                Start New Design
-              </button>
+          <button
+            onClick={handleReset}
+            className="mt-2 bg-[#B17C4A] text-white px-4 py-2 rounded-md hover:bg-[#a06e3f]"
+          >
+            Start New Design
+          </button>
 
-              {previewURL && (
-                <div className="mt-4 border rounded-lg p-2 bg-white shadow-md">
-                  <h2 className="text-sm font-semibold mb-1">Preview</h2>
-                  <img
-                    src={previewURL}
-                    alt="Preview"
-                    className="object-contain w-[300px] rounded-md"
-                  />
-                </div>
-              )}
-            </>
+          {previewURL && (
+            <div className="mt-4 border rounded-lg p-2 bg-white shadow-md">
+              <h2 className="text-sm font-semibold mb-1">Preview</h2>
+              <img
+                src={previewURL}
+                alt="Preview"
+                className="object-contain w-[300px] rounded-md"
+              />
+            </div>
           )}
         </div>
       </div>

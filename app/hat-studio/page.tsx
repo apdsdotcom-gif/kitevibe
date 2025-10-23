@@ -14,6 +14,7 @@ export default function HatStudio() {
   const [dragging, setDragging] = useState(false);
   const [previewReady, setPreviewReady] = useState(false);
 
+  // Handle photo upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -21,13 +22,16 @@ export default function HatStudio() {
     reader.onload = (event) => {
       setPhotoDataURL(event.target?.result as string);
       setPreviewReady(false);
+      setOffset({ x: 0, y: 0 });
+      setScale(1);
     };
     reader.readAsDataURL(file);
   };
 
+  // Handle dragging hat
   const handleMouseDown = (e: React.MouseEvent<HTMLImageElement>) => {
+    e.preventDefault();
     setDragging(true);
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLImageElement>) => {
@@ -40,6 +44,7 @@ export default function HatStudio() {
 
   const handleMouseUp = () => setDragging(false);
 
+  // Zoom in / out
   const handleZoom = (direction: "in" | "out") => {
     setScale((prev) => {
       const newScale = direction === "in" ? prev + 0.1 : prev - 0.1;
@@ -47,11 +52,13 @@ export default function HatStudio() {
     });
   };
 
+  // Generate preview result
   const handlePreview = () => {
     const photo = photoImgRef.current;
     const hat = hatImgRef.current;
     const canvas = previewCanvasRef.current;
     if (!photo || !hat || !canvas) return;
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -71,6 +78,7 @@ export default function HatStudio() {
     setPreviewReady(true);
   };
 
+  // Download result
   const handleDownload = () => {
     if (!previewCanvasRef.current) return;
     const link = document.createElement("a");
@@ -79,10 +87,12 @@ export default function HatStudio() {
     link.click();
   };
 
+  // Change hat color
   const handleChangeHat = () => {
     setHatType((prev) => (prev === "brown" ? "black" : "brown"));
   };
 
+  // Reset all states for new design
   const handleReset = () => {
     setPhotoDataURL(null);
     setPreviewReady(false);
@@ -92,12 +102,16 @@ export default function HatStudio() {
 
   return (
     <main className="min-h-screen flex flex-col items-center bg-[#FDFBF9] text-center">
-      <h1 className="text-4xl font-playfair font-bold mt-16 mb-2">Kite Hat Studio</h1>
+      <h1 className="text-4xl font-playfair font-bold mt-16 mb-2">
+        Kite Hat Studio
+      </h1>
       <p className="text-sm text-gray-700 mb-8 max-w-md">
-        Upload your photo, adjust your hat preview, then download your final result.
+        Upload your photo, adjust your hat preview, then download your final
+        result.
       </p>
 
       <div className="flex flex-col md:flex-row gap-10 justify-center items-start">
+        {/* Main photo editor */}
         <div className="relative bg-[#f3ece3] p-4 rounded-2xl shadow w-[300px] h-[350px] flex justify-center items-center overflow-hidden">
           {photoDataURL ? (
             <>
@@ -136,7 +150,7 @@ export default function HatStudio() {
           )}
         </div>
 
-        {/* Sidebar kanan */}
+        {/* Sidebar controls */}
         <div className="flex flex-col gap-3 items-center">
           <button
             onClick={handleChangeHat}
@@ -146,6 +160,7 @@ export default function HatStudio() {
           >
             Change Hat ({hatType})
           </button>
+
           <div className="flex gap-2">
             <button
               onClick={() => handleZoom("in")}
@@ -160,18 +175,21 @@ export default function HatStudio() {
               Zoom Out
             </button>
           </div>
+
           <button
             onClick={handlePreview}
             className="bg-[#d79a61] text-white px-6 py-2 rounded-lg hover:bg-[#c78950] transition"
           >
             Preview Result
           </button>
+
           <button
             onClick={handleDownload}
             className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
           >
             Download PNG
           </button>
+
           <button
             onClick={handleReset}
             className="bg-[#EED2B3] text-[#4B2E05] px-6 py-2 rounded-lg mt-2 hover:bg-[#e4c59e] transition"
@@ -180,10 +198,14 @@ export default function HatStudio() {
           </button>
         </div>
 
+        {/* Preview result */}
         {previewReady && (
           <div className="flex flex-col items-center">
             <h2 className="text-lg font-semibold mb-2">Preview</h2>
-            <canvas ref={previewCanvasRef} className="w-[300px] h-[350px] rounded-xl shadow-md" />
+            <canvas
+              ref={previewCanvasRef}
+              className="w-[300px] h-[350px] rounded-xl shadow-md"
+            />
           </div>
         )}
       </div>

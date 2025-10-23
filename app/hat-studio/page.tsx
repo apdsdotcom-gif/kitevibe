@@ -11,6 +11,7 @@ export default function HatStudioPage() {
 
   const photoImgRef = useRef<HTMLImageElement | null>(null);
   const hatImgRef = useRef<HTMLImageElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -31,9 +32,7 @@ export default function HatStudioPage() {
     }
   };
 
-  const handleMouseUp = () => {
-    setDragStart(null);
-  };
+  const handleMouseUp = () => setDragStart(null);
 
   const handleZoom = (zoomIn: boolean) => {
     setScale((prev) => Math.max(0.2, zoomIn ? prev + 0.1 : prev - 0.1));
@@ -43,49 +42,61 @@ export default function HatStudioPage() {
     setHat((prev) => (prev === "brown" ? "black" : "brown"));
   };
 
-  // ✅ Generate preview before download
-  const handlePreview = () => {
+  // ✅ Generate Preview using visible container size (accurate)
+  const generateCanvas = () => {
+    const container = containerRef.current;
     const photo = photoImgRef.current;
     const hatEl = hatImgRef.current;
-    if (!photo || !hatEl) return;
+    if (!container || !photo || !hatEl) return null;
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) return null;
 
-    canvas.width = photo.width;
-    canvas.height = photo.height;
-    ctx.drawImage(photo, 0, 0, photo.width, photo.height);
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    canvas.width = width;
+    canvas.height = height;
 
-    const hatWidth = hatEl.width * scale;
-    const hatHeight = hatEl.height * scale;
-    const hatX = photo.width / 2 - hatWidth / 2 + offset.x;
-    const hatY = photo.height / 4 + offset.y;
+    // draw background image
+    ctx.drawImage(photo, 0, 0, width, height);
 
+    // draw hat overlay (using actual offset from visual scale)
+    const hatWidth = hatEl.width * scale * 0.6;
+    const hatHeight = hatEl.height * scale * 0.6;
+    const hatX = width / 2 - hatWidth / 2 + offset.x;
+    const hatY = height / 4 + offset.y;
     ctx.drawImage(hatEl, hatX, hatY, hatWidth, hatHeight);
-    setPreviewURL(canvas.toDataURL("image/png"));
+
+    return canvas;
   };
 
-  // ✅ Download image after preview
+  const handlePreview = () => {
+    const canvas = generateCanvas();
+    if (canvas) setPreviewURL(canvas.toDataURL("image/png"));
+  };
+
   const handleDownload = () => {
-    if (!previewURL) return;
+    const canvas = generateCanvas();
+    if (!canvas) return;
     const a = document.createElement("a");
-    a.href = previewURL;
+    a.href = canvas.toDataURL("image/png");
     a.download = "kite-hat-result.png";
     a.click();
   };
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-20">
+    <main className="max-w-6xl mx-auto px-6 py-20">
       <h1 className="text-4xl font-bold text-center mb-4">Kite Hat Studio</h1>
-      <p className="text-center text-brown mb-10">
+      <p className="text-center mb-10">
         Upload your photo, adjust your hat, preview it, then download your final result.
       </p>
 
-      <div className="flex flex-col lg:flex-row items-start gap-10 justify-center">
-        {/* Upload & Editor */}
+      <div className="flex flex-col lg:flex-row gap-10 justify-center items-start">
+        {/* Left: Editor */}
         <div
-          className="relative w-72 h-96 bg-cream shadow rounded-xl overflow-hidden flex items-center justify-center"
+          ref={containerRef}
+          className="relative w-72 h-96 bg-cream rounded-xl shadow flex items-center justify-center overflow-hidden"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -102,12 +113,12 @@ export default function HatStudioPage() {
                 ref={hatImgRef}
                 src={`/images/hat-${hat}.png`}
                 alt="Hat"
+                className="absolute top-1/4 left-1/2 -translate-x-1/2"
                 style={{
                   transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
                   transformOrigin: "center top",
                   pointerEvents: "none",
                 }}
-                className="absolute top-1/4 left-1/2 -translate-x-1/2"
               />
             </>
           ) : (
@@ -115,8 +126,8 @@ export default function HatStudioPage() {
           )}
         </div>
 
-        {/* Controls */}
-        <div className="flex flex-col gap-3 items-center justify-center">
+        {/* Right: Controls & Preview */}
+        <div className="flex flex-col items-center gap-3">
           <input type="file" accept="image/*" onChange={handleUpload} />
           <button
             onClick={handleHatChange}
@@ -146,15 +157,18 @@ export default function HatStudioPage() {
           >
             Download PNG
           </button>
-        </div>
 
-        {/* Preview Panel */}
-        {previewURL && (
-          <div className="w-72 h-96 bg-white rounded-xl shadow flex flex-col items-center justify-center">
-            <p className="text-brown font-semibold mb-2">Preview</p>
-            <img src={previewURL} alt="Preview" className="w-full h-full object-contain rounded" />
-          </div>
-        )}
+          {previewURL && (
+            <div className="w-72 h-96 mt-4 rounded-xl shadow bg-white overflow-hidden">
+              <p className="text-center font-semibold mt-2">Preview</p>
+              <img
+                src={previewURL}
+                alt="Preview"
+                className="w-full h-full object-contain rounded-b-xl"
+              />
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );

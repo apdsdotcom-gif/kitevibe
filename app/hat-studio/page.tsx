@@ -54,7 +54,7 @@ export default function Page() {
     setHatType((prev) => (prev === "brown" ? "black" : "brown"));
   };
 
-  // ✅ FIXED: High-resolution preview and download (crystal clear)
+  // ✅ High-resolution preview & download
   const generateCanvas = (multiplier = 1) => {
     const photoEl = photoImgRef.current;
     const hatEl = hatImgRef.current;
@@ -86,14 +86,14 @@ export default function Page() {
   };
 
   const handlePreview = () => {
-    const canvas = generateCanvas(2); // 🔍 render 2x sharper
+    const canvas = generateCanvas(2);
     if (!canvas) return;
     const dataURL = canvas.toDataURL("image/png", 1.0);
     setPreviewURL(dataURL);
   };
 
   const handleDownload = () => {
-    const canvas = generateCanvas(1); // original sharp
+    const canvas = generateCanvas(1);
     if (!canvas) return;
     const link = document.createElement("a");
     link.download = "kite-hat-result.png";
@@ -101,9 +101,18 @@ export default function Page() {
     link.click();
   };
 
+  // ✳️ Start New Design (reset everything)
+  const handleReset = () => {
+    setPhotoDataURL(null);
+    setPreviewURL(null);
+    setOffset({ x: 0, y: 0 });
+    setScale(1);
+    setHatType("brown");
+  };
+
   return (
-    <main className="min-h-screen py-20 px-4 bg-[#FDF9F3] text-center">
-      <h1 className="font-playfair text-4xl mb-2">Kite Hat Studio</h1>
+    <main className="min-h-screen py-24 px-4 bg-[#FDF9F3] text-center">
+      <h1 className="font-playfair text-4xl mb-4">Kite Hat Studio</h1>
       <p className="text-sm mb-8">
         Upload your photo, adjust your hat preview, then download your final result.
       </p>
@@ -123,15 +132,25 @@ export default function Page() {
           onMouseLeave={handleMouseUp}
         >
           {!photoDataURL ? (
-            <label className="cursor-pointer text-sm bg-[#B17C4A] text-white px-4 py-2 rounded-md shadow hover:bg-[#a06e3f]">
-              Browse...
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </label>
+            <div className="flex flex-col items-center gap-3">
+              <label className="cursor-pointer text-sm bg-[#B17C4A] text-white px-4 py-2 rounded-md shadow hover:bg-[#a06e3f]">
+                Browse...
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </label>
+
+              {/* Start New Design shown from the beginning */}
+              <button
+                onClick={handleReset}
+                className="bg-[#B17C4A] text-white px-4 py-2 rounded-md hover:bg-[#a06e3f]"
+              >
+                Start New Design
+              </button>
+            </div>
           ) : (
             <>
               <img
@@ -173,10 +192,16 @@ export default function Page() {
               </button>
 
               <div className="flex gap-2">
-                <button onClick={handleZoomIn} className="px-3 py-1 border rounded-md text-sm">
+                <button
+                  onClick={handleZoomIn}
+                  className="px-3 py-1 border rounded-md text-sm"
+                >
                   Zoom In
                 </button>
-                <button onClick={handleZoomOut} className="px-3 py-1 border rounded-md text-sm">
+                <button
+                  onClick={handleZoomOut}
+                  className="px-3 py-1 border rounded-md text-sm"
+                >
                   Zoom Out
                 </button>
               </div>
@@ -195,6 +220,13 @@ export default function Page() {
                   Download PNG
                 </button>
               </div>
+
+              <button
+                onClick={handleReset}
+                className="mt-2 bg-[#B17C4A] text-white px-4 py-2 rounded-md hover:bg-[#a06e3f]"
+              >
+                Start New Design
+              </button>
 
               {previewURL && (
                 <div className="mt-4 border rounded-lg p-2 bg-white shadow-md">

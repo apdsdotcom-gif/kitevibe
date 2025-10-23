@@ -37,7 +37,7 @@ export default function HatStudio() {
 
   const handleMouseUp = () => setDragging(false);
 
-  // Download final result
+  // Download result (fixed position)
   const handleDownload = () => {
     const photo = photoImgRef.current;
     const hatEl = hatImgRef.current;
@@ -47,16 +47,16 @@ export default function HatStudio() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Match canvas with display size
-    const displayWidth = photo.width;
-    const displayHeight = photo.height;
+    // Use the actual displayed size
+    const displayWidth = photo.clientWidth;
+    const displayHeight = photo.clientHeight;
     canvas.width = displayWidth;
     canvas.height = displayHeight;
 
     // Draw photo
     ctx.drawImage(photo, 0, 0, displayWidth, displayHeight);
 
-    // Draw hat at the same position and scale as preview
+    // Draw hat in the same screen position
     const hatWidth = hatEl.width * scale;
     const hatHeight = hatEl.height * scale;
     const hatX = displayWidth / 2 - hatWidth / 2 + offset.x;
@@ -64,7 +64,7 @@ export default function HatStudio() {
 
     ctx.drawImage(hatEl, hatX, hatY, hatWidth, hatHeight);
 
-    // Trigger download
+    // Download image
     const link = document.createElement("a");
     link.download = "kite_hat_result.png";
     link.href = canvas.toDataURL("image/png");

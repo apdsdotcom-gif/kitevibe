@@ -17,7 +17,7 @@ export default function IdeasRow() {
       </article>
 
       {/* Fly Game */}
-      <article className="card bg-[#E7C4A5]">
+      <article className="card bg-[#C7DDEE]">
         <div className="flex items-start gap-3">
           <img src="/images/game-icon.svg" className="w-12 h-12" alt="Kite icon"/>
           <h3 className="h-playfair text-2xl font-bold">Kite Fly Game</h3>

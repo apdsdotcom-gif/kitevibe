@@ -1,31 +1,23 @@
 "use client";
-
-import { useRef, useState } from "react";
-import Image from "next/image";
+import { useState, useRef, useEffect } from "react";
 
 export default function HatStudio() {
-  const [photoDataURL, setPhotoDataURL] = useState<string | null>(null);
-  const [hat, setHat] = useState<"black" | "brown">("black");
+  const [photoURL, setPhotoURL] = useState<string | null>(null);
+  const [hatType, setHatType] = useState<"brown" | "black">("brown");
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [previewURL, setPreviewURL] = useState<string | null>(null);
 
-  const photoImgRef = useRef<HTMLImageElement | null>(null);
-  const hatImgRef = useRef<HTMLImageElement | null>(null);
+  const photoRef = useRef<HTMLImageElement | null>(null);
+  const hatRef = useRef<HTMLImageElement | null>(null);
 
-  // Upload user photo
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => setPhotoDataURL(reader.result as string);
-      reader.readAsDataURL(file);
-    }
+    if (file) setPhotoURL(URL.createObjectURL(file));
   };
 
-  // Drag hat
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     setDragging(true);
     setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
@@ -33,163 +25,143 @@ export default function HatStudio() {
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!dragging) return;
-    setOffset({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+    setOffset({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y,
+    });
   };
 
   const handleMouseUp = () => setDragging(false);
 
-  // Generate preview
+  const handleZoom = (direction: "in" | "out") => {
+    setScale((prev) => Math.max(0.5, Math.min(2, prev + (direction === "in" ? 0.1 : -0.1))));
+  };
+
+  const handleChangeHat = () => {
+    setHatType((prev) => (prev === "brown" ? "black" : "brown"));
+  };
+
   const handlePreview = () => {
-    const photo = photoImgRef.current;
-    const hatEl = hatImgRef.current;
-    if (!photo || !hatEl) return;
+    const photo = photoRef.current;
+    const hat = hatRef.current;
+    if (!photo || !hat) return;
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const displayWidth = photo.clientWidth;
-    const displayHeight = photo.clientHeight;
-    canvas.width = displayWidth;
-    canvas.height = displayHeight;
+    const width = photo.width;
+    const height = photo.height;
+    canvas.width = width;
+    canvas.height = height;
 
-    // Draw the uploaded photo
-    ctx.drawImage(photo, 0, 0, displayWidth, displayHeight);
+    ctx.drawImage(photo, 0, 0, width, height);
 
-    // Match hat position and scale from preview
-    const hatWidth = hatEl.width * scale;
-    const hatHeight = hatEl.height * scale;
-    const hatX = displayWidth / 2 - hatWidth / 2 + offset.x;
-    const hatY = displayHeight * 0.25 + offset.y;
+    const hatWidth = hat.width * scale;
+    const hatHeight = hat.height * scale;
+    const x = width / 2 - hatWidth / 2 + offset.x;
+    const y = height / 2 - hatHeight / 2 + offset.y;
+    ctx.drawImage(hat, x, y, hatWidth, hatHeight);
 
-    ctx.drawImage(hatEl, hatX, hatY, hatWidth, hatHeight);
-
-    const dataURL = canvas.toDataURL("image/png");
-    setPreviewURL(dataURL);
+    const resultURL = canvas.toDataURL("image/png");
+    setPreviewURL(resultURL);
   };
 
-  // Download from preview
   const handleDownload = () => {
     if (!previewURL) return;
     const link = document.createElement("a");
-    link.download = "kite_hat_result.png";
     link.href = previewURL;
+    link.download = "kite-hat-result.png";
     link.click();
   };
 
   return (
-    <main className="min-h-screen bg-cream text-brown px-4 pt-28 md:pt-32 pb-16 transition-all">
-      <div className="max-w-3xl mx-auto text-center">
-        <h1 className="font-playfair text-4xl font-bold mb-2">Kite Hat Studio</h1>
-        <p className="text-sm mb-8">
-          Upload your photo, choose a hat, drag and resize it, preview, then download your result.
-        </p>
+    <main className="max-w-6xl mx-auto px-6 py-20">
+      <h1 className="text-4xl font-bold text-center mb-6 font-playfair">Kite Hat Studio</h1>
+      <p className="text-center mb-10 text-gray-700">
+        Upload your photo, choose a hat, adjust the position, preview, and download your result.
+      </p>
 
-        {/* Upload Photo */}
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleUpload}
-          className="mb-6 text-sm"
-        />
-
-        {/* Preview Area */}
+      <div className="flex flex-col md:flex-row gap-8 justify-center">
+        {/* Left side: Editor */}
         <div
-          className="relative mx-auto w-80 h-96 bg-white rounded-xl overflow-hidden shadow cursor-pointer select-none"
+          className="relative border border-gray-300 rounded-xl p-4 shadow bg-[#FAF5EE]"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
         >
-          {photoDataURL ? (
+          {photoURL ? (
             <>
               <img
-                ref={photoImgRef}
-                src={photoDataURL}
-                alt="Uploaded"
-                className="absolute inset-0 w-full h-full object-cover"
+                ref={photoRef}
+                src={photoURL}
+                alt="uploaded"
+                className="w-[320px] h-[400px] object-cover rounded-md"
               />
-
-              <div
+              <img
+                ref={hatRef}
+                src={`/images/hat-${hatType}.png`}
+                alt="hat"
+                className="absolute left-1/2 top-1/2"
                 style={{
-                  position: "absolute",
-                  top: "25%",
-                  left: "50%",
                   transform: `translate(-50%, -50%) translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-                  transition: dragging ? "none" : "transform 0.1s ease-out",
+                  width: "200px",
+                  pointerEvents: "none",
                 }}
-              >
-                <Image
-                  ref={hatImgRef}
-                  src={`/images/hat-${hat}.png`}
-                  alt="Hat"
-                  width={180}
-                  height={180}
-                  draggable={false}
-                  className="pointer-events-none select-none"
-                />
-              </div>
+              />
             </>
           ) : (
-            <p className="text-sm text-brown mt-40">No photo uploaded yet.</p>
+            <div className="w-[320px] h-[400px] flex items-center justify-center bg-gray-100 rounded-md text-gray-500">
+              Upload a photo
+            </div>
           )}
+
+          <input type="file" accept="image/*" onChange={handleUpload} className="mt-4" />
+          <div className="mt-4 flex flex-wrap gap-2 justify-center">
+            <button
+              onClick={handleChangeHat}
+              className={`px-4 py-2 rounded-full text-white ${
+                hatType === "brown" ? "bg-[#B08968]" : "bg-black"
+              }`}
+            >
+              Change Hat ({hatType})
+            </button>
+            <button onClick={() => handleZoom("in")} className="px-4 py-2 border rounded-full">
+              Zoom In
+            </button>
+            <button onClick={() => handleZoom("out")} className="px-4 py-2 border rounded-full">
+              Zoom Out
+            </button>
+            <button
+              onClick={handlePreview}
+              className="px-4 py-2 rounded-full bg-[#D18A42] text-white hover:opacity-90"
+            >
+              Preview Result
+            </button>
+            <button
+              onClick={handleDownload}
+              className="px-4 py-2 rounded-full bg-green-600 text-white hover:opacity-90"
+            >
+              Download PNG
+            </button>
+          </div>
         </div>
 
-        {/* Control Buttons */}
-        <div className="flex justify-center gap-3 mt-6 flex-wrap">
-          <button
-            onClick={() => setHat(hat === "black" ? "brown" : "black")}
-            className={`px-4 py-2 rounded-full shadow hover:opacity-90 transition ${
-              hat === "brown"
-                ? "bg-[#7b4b2a] text-cream"
-                : "bg-black text-cream"
-            }`}
-          >
-            Change Hat ({hat})
-          </button>
-
-          <button
-            onClick={() => setScale((s) => Math.min(2.5, s + 0.1))}
-            className="px-4 py-2 bg-cream border border-brown rounded-full hover:bg-brown hover:text-cream transition"
-          >
-            Zoom In
-          </button>
-
-          <button
-            onClick={() => setScale((s) => Math.max(0.5, s - 0.1))}
-            className="px-4 py-2 bg-cream border border-brown rounded-full hover:bg-brown hover:text-cream transition"
-          >
-            Zoom Out
-          </button>
-
-          <button
-            onClick={handlePreview}
-            disabled={!photoDataURL}
-            className="px-4 py-2 bg-orange-700 text-cream rounded-full shadow hover:bg-orange-800 transition disabled:opacity-50"
-          >
-            Preview Result
-          </button>
-
-          <button
-            onClick={handleDownload}
-            disabled={!previewURL}
-            className="px-4 py-2 bg-green-700 text-cream rounded-full shadow hover:bg-green-800 transition disabled:opacity-50"
-          >
-            Download PNG
-          </button>
-        </div>
-
-        {/* Final Preview */}
-        {previewURL && (
-          <div className="mt-10">
-            <h2 className="font-playfair text-2xl mb-3">Preview</h2>
+        {/* Right side: Preview */}
+        <div className="flex flex-col items-center justify-center w-[340px]">
+          <h2 className="text-2xl font-semibold font-playfair mb-3">Preview</h2>
+          {previewURL ? (
             <img
               src={previewURL}
-              alt="Preview Result"
-              className="mx-auto rounded-xl shadow-md w-72 h-auto border border-brown"
+              alt="Preview"
+              className="w-[320px] h-[400px] object-cover rounded-lg shadow-lg"
             />
-          </div>
-        )}
+          ) : (
+            <div className="w-[320px] h-[400px] flex items-center justify-center border border-dashed border-gray-400 text-gray-500 rounded-lg">
+              No preview yet
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );

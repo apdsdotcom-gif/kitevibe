@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
 
 export default function HatStudio() {
   const [photoURL, setPhotoURL] = useState<string | null>(null);
@@ -8,25 +9,18 @@ export default function HatStudio() {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const [previewURL, setPreviewURL] = useState<string | null>(null);
+
   const containerRef = useRef<HTMLDivElement | null>(null);
   const photoRef = useRef<HTMLImageElement | null>(null);
   const hatRef = useRef<HTMLImageElement | null>(null);
 
-  // Upload image
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) setPhotoURL(URL.createObjectURL(file));
   };
 
-  // Mouse drag
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setDragging(true);
-    const rect = e.currentTarget.getBoundingClientRect();
-    setOffset({
-      x: e.clientX - rect.left - (rect.width / 2 - offset.x),
-      y: e.clientY - rect.top - (rect.height / 2 - offset.y),
-    });
-  };
+  const handleMouseDown = () => setDragging(true);
+  const handleMouseUp = () => setDragging(false);
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!dragging) return;
     setOffset((prev) => ({
@@ -34,45 +28,37 @@ export default function HatStudio() {
       y: prev.y + e.movementY,
     }));
   };
-  const handleMouseUp = () => setDragging(false);
 
-  // Zoom
   const handleZoom = (dir: "in" | "out") => {
     setScale((s) => Math.max(0.5, Math.min(2, s + (dir === "in" ? 0.1 : -0.1))));
   };
 
-  // Change hat color
-  const handleChangeHat = () => setHatType((h) => (h === "brown" ? "black" : "brown"));
+  const handleChangeHat = () =>
+    setHatType((h) => (h === "brown" ? "black" : "brown"));
 
-  // Generate preview & fix proportions
   const handlePreview = () => {
     const photo = photoRef.current;
     const hat = hatRef.current;
     const container = containerRef.current;
     if (!photo || !hat || !container) return;
 
+    const rect = container.getBoundingClientRect();
     const canvas = document.createElement("canvas");
+    canvas.width = rect.width;
+    canvas.height = rect.height;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Match actual container size
-    const width = container.offsetWidth;
-    const height = container.offsetHeight;
-    canvas.width = width;
-    canvas.height = height;
-
-    ctx.drawImage(photo, 0, 0, width, height);
-
+    ctx.drawImage(photo, 0, 0, rect.width, rect.height);
     const hatW = hat.naturalWidth * scale * 0.6;
     const hatH = hat.naturalHeight * scale * 0.6;
-    const x = width / 2 - hatW / 2 + offset.x;
-    const y = height / 2 - hatH / 2 + offset.y;
-
+    const x = rect.width / 2 - hatW / 2 + offset.x;
+    const y = rect.height / 2 - hatH / 2 + offset.y;
     ctx.drawImage(hat, x, y, hatW, hatH);
+
     setPreviewURL(canvas.toDataURL("image/png"));
   };
 
-  // Download preview
   const handleDownload = () => {
     if (!previewURL) return;
     const a = document.createElement("a");
@@ -83,19 +69,21 @@ export default function HatStudio() {
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-16">
-      <h1 className="text-4xl font-bold font-playfair text-center mb-6">Kite Hat Studio</h1>
+      <h1 className="text-4xl font-playfair font-bold text-center mb-6">
+        Kite Hat Studio
+      </h1>
       <p className="text-center text-gray-700 mb-10">
         Upload foto, pilih topi, atur posisi & ukuran, lalu preview dan unduh hasilnya.
       </p>
 
-      <div className="flex flex-col lg:flex-row justify-center items-start gap-8">
-        {/* LEFT: Editor */}
+      <div className="flex flex-col lg:flex-row justify-center items-start gap-10">
+        {/* Editor */}
         <div
           ref={containerRef}
-          className="relative w-[300px] h-[380px] bg-[#fdf8f3] border border-[#cbb8a0] rounded-2xl shadow flex items-center justify-center overflow-hidden"
           onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          className="relative w-[300px] h-[380px] bg-[#fdf8f3] border border-[#cbb8a0] rounded-2xl shadow-md flex items-center justify-center overflow-hidden"
         >
           {photoURL ? (
             <>
@@ -124,13 +112,14 @@ export default function HatStudio() {
           )}
         </div>
 
-        {/* RIGHT: Controls & Preview */}
+        {/* Controls & Preview */}
         <div className="flex flex-col items-center gap-4 w-[320px]">
           <input type="file" accept="image/*" onChange={handleUpload} />
+
           <div className="flex flex-wrap justify-center gap-2">
             <button
               onClick={handleChangeHat}
-              className={`px-4 py-2 rounded-full text-white ${
+              className={`px-4 py-2 rounded-full text-white transition ${
                 hatType === "brown" ? "bg-[#B08968]" : "bg-black"
               }`}
             >
@@ -158,10 +147,14 @@ export default function HatStudio() {
 
           <h2 className="text-2xl font-semibold font-playfair mt-4">Preview</h2>
           {previewURL ? (
-            <img
+            <motion.img
+              key={previewURL}
               src={previewURL}
               alt="Preview"
-              className="w-[300px] h-[380px] rounded-lg shadow-md object-cover"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="w-[300px] h-[380px] rounded-lg shadow object-cover"
             />
           ) : (
             <div className="w-[300px] h-[380px] flex items-center justify-center border border-dashed rounded-lg text-gray-500">

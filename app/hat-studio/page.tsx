@@ -18,9 +18,7 @@ export default function Page() {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => {
-      setPhotoDataURL(ev.target?.result as string);
-    };
+    reader.onload = (ev) => setPhotoDataURL(ev.target?.result as string);
     reader.readAsDataURL(file);
   };
 
@@ -56,19 +54,19 @@ export default function Page() {
     setHatType((prev) => (prev === "brown" ? "black" : "brown"));
   };
 
-  // ✅ FIXED - High resolution and perfectly aligned download
-  const handleDownload = () => {
+  // ✅ FIXED: High-resolution preview and download (crystal clear)
+  const generateCanvas = (multiplier = 1) => {
     const photoEl = photoImgRef.current;
     const hatEl = hatImgRef.current;
-    if (!photoEl || !hatEl) return;
+    if (!photoEl || !hatEl) return null;
 
+    const width = photoEl.naturalWidth * multiplier;
+    const height = photoEl.naturalHeight * multiplier;
     const canvas = document.createElement("canvas");
-    const width = photoEl.naturalWidth;
-    const height = photoEl.naturalHeight;
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) return null;
 
     ctx.drawImage(photoEl, 0, 0, width, height);
 
@@ -84,42 +82,23 @@ export default function Page() {
     const hatH = hatRect.height * ratioY;
 
     ctx.drawImage(hatEl, hatX, hatY, hatW, hatH);
-
-    const link = document.createElement("a");
-    link.download = "kite-hat-result.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
+    return canvas;
   };
 
   const handlePreview = () => {
-    const photoEl = photoImgRef.current;
-    const hatEl = hatImgRef.current;
-    if (!photoEl || !hatEl) return;
+    const canvas = generateCanvas(2); // 🔍 render 2x sharper
+    if (!canvas) return;
+    const dataURL = canvas.toDataURL("image/png", 1.0);
+    setPreviewURL(dataURL);
+  };
 
-    const canvas = document.createElement("canvas");
-    const width = photoEl.naturalWidth;
-    const height = photoEl.naturalHeight;
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.drawImage(photoEl, 0, 0, width, height);
-
-    const ratioX = width / photoEl.clientWidth;
-    const ratioY = height / photoEl.clientHeight;
-
-    const hatRect = hatEl.getBoundingClientRect();
-    const photoRect = photoEl.getBoundingClientRect();
-
-    const hatX = (hatRect.left - photoRect.left) * ratioX;
-    const hatY = (hatRect.top - photoRect.top) * ratioY;
-    const hatW = hatRect.width * ratioX;
-    const hatH = hatRect.height * ratioY;
-
-    ctx.drawImage(hatEl, hatX, hatY, hatW, hatH);
-
-    setPreviewURL(canvas.toDataURL("image/png"));
+  const handleDownload = () => {
+    const canvas = generateCanvas(1); // original sharp
+    if (!canvas) return;
+    const link = document.createElement("a");
+    link.download = "kite-hat-result.png";
+    link.href = canvas.toDataURL("image/png", 1.0);
+    link.click();
   };
 
   return (
@@ -130,7 +109,7 @@ export default function Page() {
       </p>
 
       <div className="flex flex-col md:flex-row justify-center items-start gap-8">
-        {/* Main editing area */}
+        {/* Main Editor */}
         <div
           className="relative bg-white/80 rounded-xl shadow-md p-4 w-[300px] flex items-center justify-center overflow-hidden"
           style={{
@@ -178,7 +157,7 @@ export default function Page() {
           )}
         </div>
 
-        {/* Controls and preview */}
+        {/* Control Panel */}
         <div className="flex flex-col items-center gap-3">
           {photoDataURL && (
             <>

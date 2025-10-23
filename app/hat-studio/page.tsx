@@ -5,104 +5,82 @@ export default function HatStudio() {
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const photoImgRef = useRef<HTMLImageElement | null>(null);
   const hatImgRef = useRef<HTMLImageElement | null>(null);
-  const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const [photoDataURL, setPhotoDataURL] = useState<string | null>(null);
+  const [photoURL, setPhotoURL] = useState<string | null>(null);
   const [hatType, setHatType] = useState<"brown" | "black">("brown");
-  const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [scale, setScale] = useState(1);
   const [dragging, setDragging] = useState(false);
-  const [previewReady, setPreviewReady] = useState(false);
 
-  // Handle photo upload
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Upload image
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (event) => {
-      setPhotoDataURL(event.target?.result as string);
-      setPreviewReady(false);
-      setOffset({ x: 0, y: 0 });
-      setScale(1);
-    };
+    reader.onload = (ev) => setPhotoURL(ev.target?.result as string);
     reader.readAsDataURL(file);
   };
 
-  // Handle dragging hat
-  const handleMouseDown = (e: React.MouseEvent<HTMLImageElement>) => {
-    e.preventDefault();
-    setDragging(true);
-  };
-
+  // Drag hat
+  const handleMouseDown = () => setDragging(true);
   const handleMouseMove = (e: React.MouseEvent<HTMLImageElement>) => {
     if (!dragging) return;
-    setOffset((prev) => ({
-      x: prev.x + e.movementX,
-      y: prev.y + e.movementY,
-    }));
+    setOffset((p) => ({ x: p.x + e.movementX, y: p.y + e.movementY }));
   };
-
   const handleMouseUp = () => setDragging(false);
 
-  // Zoom in / out
-  const handleZoom = (direction: "in" | "out") => {
-    setScale((prev) => {
-      const newScale = direction === "in" ? prev + 0.1 : prev - 0.1;
-      return Math.max(0.3, Math.min(newScale, 3));
-    });
+  // Zoom
+  const zoom = (d: "in" | "out") =>
+    setScale((s) => Math.max(0.3, Math.min(3, s + (d === "in" ? 0.1 : -0.1))));
+
+  // Change hat color
+  const changeHat = () =>
+    setHatType((p) => (p === "brown" ? "black" : "brown"));
+
+  // Reset design
+  const resetAll = () => {
+    setPhotoURL(null);
+    setScale(1);
+    setOffset({ x: 0, y: 0 });
   };
 
-  // Generate preview result
-  const handlePreview = () => {
+  // Preview & Download combined fix
+  const generateCanvas = (download = false) => {
     const photo = photoImgRef.current;
     const hat = hatImgRef.current;
-    const canvas = previewCanvasRef.current;
+    const canvas = canvasRef.current;
     if (!photo || !hat || !canvas) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const width = photo.naturalWidth;
-    const height = photo.naturalHeight;
-    canvas.width = width;
-    canvas.height = height;
+    const w = photo.naturalWidth;
+    const h = photo.naturalHeight;
+    canvas.width = w;
+    canvas.height = h;
 
-    ctx.drawImage(photo, 0, 0, width, height);
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(photo, 0, 0, w, h);
 
-    const hatWidth = hat.naturalWidth * scale;
-    const hatHeight = hat.naturalHeight * scale;
-    const x = width / 2 - hatWidth / 2 + offset.x;
-    const y = height / 2 - hatHeight / 2 + offset.y;
+    const hw = hat.naturalWidth * scale;
+    const hh = hat.naturalHeight * scale;
+    const x = w / 2 - hw / 2 + offset.x;
+    const y = h / 2 - hh / 2 + offset.y;
 
-    ctx.drawImage(hat, x, y, hatWidth, hatHeight);
-    setPreviewReady(true);
-  };
+    ctx.drawImage(hat, x, y, hw, hh);
 
-  // Download result
-  const handleDownload = () => {
-    if (!previewCanvasRef.current) return;
-    const link = document.createElement("a");
-    link.download = "kite-hat-result.png";
-    link.href = previewCanvasRef.current.toDataURL("image/png");
-    link.click();
-  };
-
-  // Change hat color
-  const handleChangeHat = () => {
-    setHatType((prev) => (prev === "brown" ? "black" : "brown"));
-  };
-
-  // Reset all states for new design
-  const handleReset = () => {
-    setPhotoDataURL(null);
-    setPreviewReady(false);
-    setOffset({ x: 0, y: 0 });
-    setScale(1);
+    if (download) {
+      const link = document.createElement("a");
+      link.download = "kite-hat-result.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
   };
 
   return (
     <main className="min-h-screen flex flex-col items-center bg-[#FDFBF9] text-center">
-      <h1 className="text-4xl font-playfair font-bold mt-16 mb-2">
+      <h1 className="text-4xl font-playfair font-bold mt-24 mb-2">
         Kite Hat Studio
       </h1>
       <p className="text-sm text-gray-700 mb-8 max-w-md">
@@ -111,26 +89,26 @@ export default function HatStudio() {
       </p>
 
       <div className="flex flex-col md:flex-row gap-10 justify-center items-start">
-        {/* Main photo editor */}
+        {/* Main Editor */}
         <div className="relative bg-[#f3ece3] p-4 rounded-2xl shadow w-[300px] h-[350px] flex justify-center items-center overflow-hidden">
-          {photoDataURL ? (
+          {photoURL ? (
             <>
               <img
                 ref={photoImgRef}
-                src={photoDataURL}
-                alt="Uploaded"
+                src={photoURL}
+                alt="photo"
                 className="absolute w-full h-full object-cover rounded-lg"
               />
               <img
                 ref={hatImgRef}
                 src={`/images/hat-${hatType}.png`}
-                alt="Hat"
+                alt="hat"
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 style={{
                   transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-                  transition: dragging ? "none" : "transform 0.2s ease",
+                  transition: dragging ? "none" : "transform 0.15s ease",
                   cursor: "move",
                 }}
                 className="absolute w-40"
@@ -142,18 +120,18 @@ export default function HatStudio() {
               <input
                 type="file"
                 accept="image/*"
+                onChange={handleFile}
                 ref={photoInputRef}
-                onChange={handleFileChange}
                 className="hidden"
               />
             </label>
           )}
         </div>
 
-        {/* Sidebar controls */}
+        {/* Controls */}
         <div className="flex flex-col gap-3 items-center">
           <button
-            onClick={handleChangeHat}
+            onClick={changeHat}
             className={`px-5 py-2 rounded-lg text-white font-medium transition ${
               hatType === "brown" ? "bg-[#a67c52]" : "bg-[#3a3a3a]"
             }`}
@@ -163,13 +141,13 @@ export default function HatStudio() {
 
           <div className="flex gap-2">
             <button
-              onClick={() => handleZoom("in")}
+              onClick={() => zoom("in")}
               className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
             >
               Zoom In
             </button>
             <button
-              onClick={() => handleZoom("out")}
+              onClick={() => zoom("out")}
               className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
             >
               Zoom Out
@@ -177,37 +155,35 @@ export default function HatStudio() {
           </div>
 
           <button
-            onClick={handlePreview}
+            onClick={() => generateCanvas(false)}
             className="bg-[#d79a61] text-white px-6 py-2 rounded-lg hover:bg-[#c78950] transition"
           >
             Preview Result
           </button>
 
           <button
-            onClick={handleDownload}
+            onClick={() => generateCanvas(true)}
             className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
           >
             Download PNG
           </button>
 
           <button
-            onClick={handleReset}
+            onClick={resetAll}
             className="bg-[#EED2B3] text-[#4B2E05] px-6 py-2 rounded-lg mt-2 hover:bg-[#e4c59e] transition"
           >
             Start New Design
           </button>
         </div>
 
-        {/* Preview result */}
-        {previewReady && (
-          <div className="flex flex-col items-center">
-            <h2 className="text-lg font-semibold mb-2">Preview</h2>
-            <canvas
-              ref={previewCanvasRef}
-              className="w-[300px] h-[350px] rounded-xl shadow-md"
-            />
-          </div>
-        )}
+        {/* Canvas Preview */}
+        <div className="flex flex-col items-center">
+          <h2 className="text-lg font-semibold mb-2">Preview</h2>
+          <canvas
+            ref={canvasRef}
+            className="w-[300px] h-[350px] rounded-xl shadow-md bg-[#f3ece3]"
+          />
+        </div>
       </div>
     </main>
   );

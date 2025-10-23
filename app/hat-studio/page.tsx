@@ -47,22 +47,22 @@ export default function Page() {
     }));
   };
 
-  const handleZoomIn = () => {
-    if (!photoDataURL) return alert("Please upload a photo first.");
-    setScale((prev) => prev + 0.1);
-  };
-
-  const handleZoomOut = () => {
-    if (!photoDataURL) return alert("Please upload a photo first.");
-    setScale((prev) => Math.max(0.2, prev - 0.1));
-  };
+  const handleZoomIn = () => setScale((prev) => prev + 0.1);
+  const handleZoomOut = () => setScale((prev) => Math.max(0.2, prev - 0.1));
 
   const handleChangeHat = () => {
-    if (!photoDataURL) return alert("Please upload a photo first.");
     setHatType((prev) => (prev === "brown" ? "black" : "brown"));
   };
 
-  // ✅ High-resolution preview & download
+  const handleReset = () => {
+    setPhotoDataURL(null);
+    setPreviewURL(null);
+    setOffset({ x: 0, y: 0 });
+    setScale(1);
+    setHatType("brown");
+  };
+
+  // ✅ FIXED: High-resolution preview and download (sharp)
   const generateCanvas = (multiplier = 1) => {
     const photoEl = photoImgRef.current;
     const hatEl = hatImgRef.current;
@@ -94,7 +94,6 @@ export default function Page() {
   };
 
   const handlePreview = () => {
-    if (!photoDataURL) return alert("Please upload a photo first.");
     const canvas = generateCanvas(2);
     if (!canvas) return;
     const dataURL = canvas.toDataURL("image/png", 1.0);
@@ -102,7 +101,6 @@ export default function Page() {
   };
 
   const handleDownload = () => {
-    if (!photoDataURL) return alert("Please upload a photo first.");
     const canvas = generateCanvas(1);
     if (!canvas) return;
     const link = document.createElement("a");
@@ -111,26 +109,17 @@ export default function Page() {
     link.click();
   };
 
-  // ✳️ Start New Design (reset everything)
-  const handleReset = () => {
-    setPhotoDataURL(null);
-    setPreviewURL(null);
-    setOffset({ x: 0, y: 0 });
-    setScale(1);
-    setHatType("brown");
-  };
-
   return (
-    <main className="min-h-screen py-24 px-4 bg-[#FDF9F3] text-center">
-      <h1 className="font-playfair text-4xl mb-4">Kite Hat Studio</h1>
-      <p className="text-sm mb-8">
+    <main className="min-h-screen py-24 px-4 bg-[#FDF9F3] text-center transition-all duration-300">
+      <h1 className="font-playfair text-4xl mb-3 text-[#3b2f1b]">Kite Hat Studio</h1>
+      <p className="text-sm mb-10 text-[#5b4636]">
         Upload your photo, adjust your hat preview, then download your final result.
       </p>
 
-      <div className="flex flex-col md:flex-row justify-center items-start gap-8">
+      <div className="flex flex-col md:flex-row justify-center items-start gap-10">
         {/* Main Editor */}
         <div
-          className="relative bg-white/80 rounded-xl shadow-md p-4 w-[300px] flex items-center justify-center overflow-hidden"
+          className="relative bg-white/90 rounded-2xl shadow-lg p-4 w-[300px] flex items-center justify-center overflow-hidden transition-all"
           style={{
             height:
               imageSize.height && imageSize.width
@@ -142,7 +131,7 @@ export default function Page() {
           onMouseLeave={handleMouseUp}
         >
           {!photoDataURL ? (
-            <label className="cursor-pointer text-sm bg-[#B17C4A] text-white px-4 py-2 rounded-md shadow hover:bg-[#a06e3f]">
+            <label className="cursor-pointer text-sm bg-[#B17C4A] text-white px-5 py-2 rounded-md shadow hover:bg-[#a06e3f] transition">
               Browse...
               <input
                 type="file"
@@ -168,7 +157,7 @@ export default function Page() {
                   transformOrigin: "center",
                   cursor: "grab",
                 }}
-                className="absolute top-1/3 left-1/2 w-[180px] select-none"
+                className="absolute top-1/3 left-1/2 w-[180px] select-none transition-transform duration-200"
                 onMouseDown={handleMouseDown}
                 draggable={false}
               />
@@ -177,11 +166,11 @@ export default function Page() {
         </div>
 
         {/* Control Panel */}
-        <div className="flex flex-col items-center gap-3">
-          {/* Always visible buttons */}
+        <div className="flex flex-col items-center gap-3 w-[250px]">
+          {/* Buttons always visible */}
           <button
             onClick={handleChangeHat}
-            className={`px-4 py-2 rounded-md text-white font-medium shadow ${
+            className={`px-4 py-2 rounded-md text-white font-medium shadow transition ${
               hatType === "brown"
                 ? "bg-[#B17C4A] hover:bg-[#a06e3f]"
                 : "bg-[#333] hover:bg-[#222]"
@@ -191,49 +180,42 @@ export default function Page() {
           </button>
 
           <div className="flex gap-2">
-            <button
-              onClick={handleZoomIn}
-              className="px-3 py-1 border rounded-md text-sm"
-            >
+            <button onClick={handleZoomIn} className="px-3 py-1 border rounded-md text-sm hover:bg-[#f5f0e8]">
               Zoom In
             </button>
-            <button
-              onClick={handleZoomOut}
-              className="px-3 py-1 border rounded-md text-sm"
-            >
+            <button onClick={handleZoomOut} className="px-3 py-1 border rounded-md text-sm hover:bg-[#f5f0e8]">
               Zoom Out
             </button>
           </div>
 
-          <div className="flex gap-2 mt-2">
+          <div className="flex flex-col gap-2 mt-2">
             <button
               onClick={handlePreview}
-              className="bg-[#B17C4A] text-white px-4 py-2 rounded-md hover:bg-[#a06e3f]"
+              className="bg-[#B17C4A] text-white px-4 py-2 rounded-md hover:bg-[#a06e3f] transition"
             >
               Preview Result
             </button>
             <button
               onClick={handleDownload}
-              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition"
             >
               Download PNG
             </button>
+            <button
+              onClick={handleReset}
+              className="border border-[#d5bfa6] text-[#5a432b] px-4 py-2 rounded-md hover:bg-[#f6ebd8] transition"
+            >
+              Start New Design
+            </button>
           </div>
 
-          <button
-            onClick={handleReset}
-            className="mt-2 bg-[#B17C4A] text-white px-4 py-2 rounded-md hover:bg-[#a06e3f]"
-          >
-            Start New Design
-          </button>
-
           {previewURL && (
-            <div className="mt-4 border rounded-lg p-2 bg-white shadow-md">
-              <h2 className="text-sm font-semibold mb-1">Preview</h2>
+            <div className="mt-4 border rounded-lg p-2 bg-white shadow-md w-[270px]">
+              <h2 className="text-sm font-semibold mb-1 text-[#3b2f1b]">Preview</h2>
               <img
                 src={previewURL}
                 alt="Preview"
-                className="object-contain w-[300px] rounded-md"
+                className="object-contain w-full rounded-md"
               />
             </div>
           )}

@@ -164,8 +164,3 @@ export default function HatStudio() {
     </main>
   );
 }
-        </div>
-      </div>
-    </main>
-  );
-}

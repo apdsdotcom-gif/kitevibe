@@ -1,269 +1,160 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import Image from "next/image";
 
-type HatMeta = {
-  src: string;
-  img?: HTMLImageElement;
-  naturalW?: number;
-  naturalH?: number;
-};
-
-const HATS: Record<"black" | "brown", HatMeta> = {
-  black: { src: "/images/hat-black.png" },
-  brown: { src: "/images/hat-brown.png" },
-};
-
-export default function HatStudioPage() {
-  // photo states
+export default function HatStudio() {
   const [photoDataURL, setPhotoDataURL] = useState<string | null>(null);
-  const [photoNatural, setPhotoNatural] = useState({ w: 0, h: 0 });
+  const [hat, setHat] = useState<"black" | "brown">("black");
+  const [scale, setScale] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
   const photoImgRef = useRef<HTMLImageElement | null>(null);
+  const hatImgRef = useRef<HTMLImageElement | null>(null);
 
-  // preview layout
-  const PREVIEW_W = 420; // px
-  const [previewH, setPreviewH] = useState<number>(420);
-
-  // hat states
-  const [selected, setSelected] = useState<"black" | "brown" | null>(null);
-  const [hatPos, setHatPos] = useState({ x: 140, y: 60 }); // top-left (in preview coords)
-  const [hatScale, setHatScale] = useState(1); // 0.3 - 3
-  const [hatMeta, setHatMeta] = useState<HatMeta | null>(null);
-
-  // drag
-  const draggingRef = useRef(false);
-  const lastMouseRef = useRef<{ x: number; y: number } | null>(null);
-
-  // canvas for download
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  // load hat image metadata when selected
-  useEffect(() => {
-    if (!selected) return;
-    const meta = HATS[selected];
-    if (meta.img) {
-      setHatMeta(meta);
-      return;
-    }
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = meta.src;
-    img.onload = () => {
-      meta.img = img;
-      meta.naturalW = img.naturalWidth || img.width;
-      meta.naturalH = img.naturalHeight || img.height;
-      setHatMeta({ ...meta });
-    };
-  }, [selected]);
-
-  // handle photo upload
-  const onUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle photo upload
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const url = reader.result as string;
-      setPhotoDataURL(url);
-
-      const img = new Image();
-      img.src = url;
-      img.onload = () => {
-        const natW = img.naturalWidth || img.width;
-        const natH = img.naturalHeight || img.height;
-        setPhotoNatural({ w: natW, h: natH });
-
-        // set preview height by aspect ratio
-        const h = Math.round((PREVIEW_W * natH) / natW);
-        setPreviewH(h);
-
-        // place hat near top-center with reasonable size
-        setHatScale(0.8);
-        const baseW = PREVIEW_W * 0.5 * 0.8; // initial width
-        setHatPos({
-          x: Math.round((PREVIEW_W - baseW) / 2),
-          y: Math.round(h * 0.18),
-        });
-      };
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // drag handlers
-  const onMouseDown = (e: React.MouseEvent) => {
-    draggingRef.current = true;
-    lastMouseRef.current = { x: e.clientX, y: e.clientY };
-  };
-  const onMouseUp = () => {
-    draggingRef.current = false;
-    lastMouseRef.current = null;
-  };
-  const onMouseLeave = () => onMouseUp();
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (!draggingRef.current) return;
-    const last = lastMouseRef.current;
-    if (!last) return;
-    const dx = e.clientX - last.x;
-    const dy = e.clientY - last.y;
-    lastMouseRef.current = { x: e.clientX, y: e.clientY };
-    setHatPos((p) => ({ x: p.x + dx, y: p.y + dy }));
-  };
-
-  // wheel to resize
-  const onWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    const next = Math.max(0.3, Math.min(3, hatScale - e.deltaY * 0.001));
-    setHatScale(next);
-  };
-
-  // compute hat draw size in preview coords
-  const hatPreviewSize = () => {
-    if (!hatMeta?.naturalW || !hatMeta?.naturalH) {
-      // fallback ratio
-      const w = PREVIEW_W * 0.5 * hatScale;
-      const h = w * (0.65);
-      return { w, h };
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => setPhotoDataURL(reader.result as string);
+      reader.readAsDataURL(file);
     }
-    const ratio = hatMeta.naturalH / hatMeta.naturalW;
-    const w = PREVIEW_W * 0.5 * hatScale;
-    const h = w * ratio;
-    return { w, h };
   };
 
-  // download final PNG at full photo resolution
-  const onDownload = () => {
-    if (!photoDataURL || !hatMeta?.img || !canvasRef.current) return;
-    const canvas = canvasRef.current;
+  // Handle hat drag
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    setDragging(true);
+    setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!dragging) return;
+    setOffset({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+  };
+
+  const handleMouseUp = () => setDragging(false);
+
+  // Handle download
+  const handleDownload = () => {
+    const photo = photoImgRef.current;
+    const hatEl = hatImgRef.current;
+    if (!photo || !hatEl) return;
+
+    const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const factor = photoNatural.w / PREVIEW_W; // preview -> original scale
-    canvas.width = photoNatural.w;
-    canvas.height = photoNatural.h;
+    canvas.width = photo.naturalWidth;
+    canvas.height = photo.naturalHeight;
 
-    // draw photo
-    const base = new Image();
-    base.src = photoDataURL;
-    base.onload = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(base, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(photo, 0, 0);
+    ctx.drawImage(
+      hatEl,
+      canvas.width / 2 - (hatEl.width * scale) / 2 + offset.x,
+      canvas.height * 0.25 + offset.y,
+      hatEl.width * scale,
+      hatEl.height * scale
+    );
 
-      // draw hat
-      const sizePrev = hatPreviewSize();
-      const x = Math.round(hatPos.x * factor);
-      const y = Math.round(hatPos.y * factor);
-      const w = Math.round(sizePrev.w * factor);
-      const h = Math.round(sizePrev.h * factor);
-      ctx.drawImage(hatMeta.img as HTMLImageElement, x, y, w, h);
-
-      // trigger download
-      const link = document.createElement("a");
-      link.download = "kite-hat-result.png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    };
+    const link = document.createElement("a");
+    link.download = "kite_hat_result.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
   };
 
   return (
-    <main className="min-h-screen bg-cream text-brown px-4 py-10 flex flex-col items-center">
-      <h1 className="font-playfair text-4xl mb-3">Kite Hat Studio</h1>
-      <p className="max-w-2xl text-center mb-8">
-        Upload your photo, choose a hat, drag to position, scroll to resize, and download your retro look.
-      </p>
+    <main className="min-h-screen bg-cream text-brown px-4 py-12">
+      <div className="max-w-3xl mx-auto text-center">
+        <h1 className="font-playfair text-4xl font-bold mb-2">Kite Hat Studio</h1>
+        <p className="text-sm mb-8">
+          Upload your photo, choose a hat, drag and resize it, then download your result.
+        </p>
 
-      {/* Controls */}
-      <div className="flex flex-wrap items-center gap-3 mb-8">
-        <label className="btn-primary cursor-pointer inline-block">
-          <input type="file" accept="image/*" onChange={onUpload} className="hidden" />
-          Upload Photo
-        </label>
+        {/* Upload photo */}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleUpload}
+          className="mb-6 text-sm"
+        />
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm opacity-70">Hat:</span>
-          <button
-            onClick={() => setSelected("black")}
-            className={`px-4 py-2 rounded-full shadow transition ${
-              selected === "black" ? "bg-orange-700 text-cream" : "bg-brown text-cream hover:bg-orange-700"
-            }`}
-          >
-            Black
-          </button>
-          <button
-            onClick={() => setSelected("brown")}
-            className={`px-4 py-2 rounded-full shadow transition ${
-              selected === "brown" ? "bg-orange-700 text-cream" : "bg-brown text-cream hover:bg-orange-700"
-            }`}
-          >
-            Brown
-          </button>
+        {/* Preview Area */}
+        <div
+          className="relative mx-auto w-80 h-96 bg-white rounded-xl overflow-hidden shadow cursor-pointer select-none"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+          {photoDataURL ? (
+            <>
+              <img
+                ref={photoImgRef}
+                src={photoDataURL}
+                alt="Uploaded"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+
+              <div
+                style={{
+                  position: "absolute",
+                  top: "25%",
+                  left: "50%",
+                  transform: `translate(-50%, -50%) translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
+                  transition: dragging ? "none" : "transform 0.1s ease-out",
+                }}
+              >
+                <Image
+                  ref={hatImgRef}
+                  src={`/images/hat-${hat}.png`}
+                  alt="Hat"
+                  width={180}
+                  height={180}
+                  draggable={false}
+                  className="pointer-events-none select-none"
+                />
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-brown mt-40">No photo uploaded yet.</p>
+          )}
         </div>
 
-        <button
-          onClick={() => {
-            // quick reset hat to top-center
-            const size = hatPreviewSize();
-            setHatScale(0.8);
-            setHatPos({ x: Math.round((PREVIEW_W - size.w) / 2), y: Math.round(previewH * 0.18) });
-          }}
-          className="btn-outline"
-        >
-          Reset Hat
-        </button>
+        {/* Controls */}
+        <div className="flex justify-center gap-3 mt-6 flex-wrap">
+          <button
+            onClick={() => setHat(hat === "black" ? "brown" : "black")}
+            className="px-4 py-2 bg-brown text-cream rounded-full shadow hover:opacity-90 transition"
+          >
+            Change Hat ({hat})
+          </button>
 
-        <button
-          onClick={onDownload}
-          disabled={!photoDataURL || !selected}
-          className="btn-primary disabled:opacity-50"
-        >
-          Download PNG
-        </button>
+          <button
+            onClick={() => setScale((s) => Math.min(2.5, s + 0.1))}
+            className="px-4 py-2 bg-cream border border-brown rounded-full hover:bg-brown hover:text-cream transition"
+          >
+            Zoom In
+          </button>
+
+          <button
+            onClick={() => setScale((s) => Math.max(0.5, s - 0.1))}
+            className="px-4 py-2 bg-cream border border-brown rounded-full hover:bg-brown hover:text-cream transition"
+          >
+            Zoom Out
+          </button>
+
+          <button
+            onClick={handleDownload}
+            disabled={!photoDataURL}
+            className="px-4 py-2 bg-orange-700 text-cream rounded-full shadow hover:bg-orange-800 transition disabled:opacity-50"
+          >
+            Download PNG
+          </button>
+        </div>
       </div>
-
-      {/* Preview */}
-      <div
-        className="relative rounded-xl shadow-lg border-2 border-brown bg-white overflow-hidden select-none"
-        style={{ width: PREVIEW_W, height: previewH }}
-        onMouseDown={onMouseDown}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseLeave}
-        onMouseMove={onMouseMove}
-        onWheel={onWheel}
-        title="Drag the hat. Scroll to resize."
-      >
-        {photoDataURL ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            ref={(el) => (photoImgRef.current = el)}
-            src={photoDataURL}
-            alt="Uploaded"
-            className="absolute inset-0 w-full h-full object-cover"
-            draggable={false}
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-sm opacity-60">
-            Upload a photo to start
-          </div>
-        )}
-
-        {photoDataURL && selected && hatMeta?.img && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={hatMeta.src}
-            alt="Hat"
-            className="absolute"
-            draggable={false}
-            style={{
-              left: hatPos.x,
-              top: hatPos.y,
-              width: hatPreviewSize().w,
-              height: hatPreviewSize().h,
-              pointerEvents: "none",
-            }}
-          />
-        )}
-      </div>
-
-      {/* hidden canvas for export */}
-      <canvas ref={canvasRef} className="hidden" />
     </main>
   );
 }

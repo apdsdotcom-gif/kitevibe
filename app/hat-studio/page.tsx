@@ -24,7 +24,7 @@ export default function HatStudio() {
     }
   };
 
-  // Drag hat
+  // Drag hat movement
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     setDragging(true);
     setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
@@ -37,7 +37,7 @@ export default function HatStudio() {
 
   const handleMouseUp = () => setDragging(false);
 
-  // Download result (fixed position)
+  // ✅ Fixed: download result matches exactly what user sees
   const handleDownload = () => {
     const photo = photoImgRef.current;
     const hatEl = hatImgRef.current;
@@ -47,16 +47,16 @@ export default function HatStudio() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Use the actual displayed size
+    // Use actual displayed size, not natural image size
     const displayWidth = photo.clientWidth;
     const displayHeight = photo.clientHeight;
     canvas.width = displayWidth;
     canvas.height = displayHeight;
 
-    // Draw photo
+    // Draw the uploaded photo
     ctx.drawImage(photo, 0, 0, displayWidth, displayHeight);
 
-    // Draw hat in the same screen position
+    // Match hat position and scale from preview
     const hatWidth = hatEl.width * scale;
     const hatHeight = hatEl.height * scale;
     const hatX = displayWidth / 2 - hatWidth / 2 + offset.x;
@@ -64,7 +64,7 @@ export default function HatStudio() {
 
     ctx.drawImage(hatEl, hatX, hatY, hatWidth, hatHeight);
 
-    // Download image
+    // Save as PNG
     const link = document.createElement("a");
     link.download = "kite_hat_result.png";
     link.href = canvas.toDataURL("image/png");
@@ -129,7 +129,7 @@ export default function HatStudio() {
           )}
         </div>
 
-        {/* Control Buttons */}
+        {/* Controls */}
         <div className="flex justify-center gap-3 mt-6 flex-wrap">
           <button
             onClick={() => setHat(hat === "black" ? "brown" : "black")}

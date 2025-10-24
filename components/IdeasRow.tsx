@@ -10,8 +10,8 @@ export default function IdeasRow() {
           <h3 className="h-playfair text-2xl font-bold">Kite Hat Studio</h3>
         </div>
         <p className="mt-4 text-sm leading-relaxed">
-          Upload photo → otomatis pakai topi. <br/>
-          Dapat digeser manual dan download hasil.
+          Upload photo → automatically apply hat. <br/>
+          Can be manually swiped → preview download results.
         </p>
         <a href="/hat-studio" className="btn-primary mt-6 inline-block">Open Hat Studio</a>
       </article>
@@ -23,8 +23,8 @@ export default function IdeasRow() {
           <h3 className="h-playfair text-2xl font-bold">Kite Fly Game</h3>
         </div>
         <p className="mt-4 text-sm leading-relaxed">
-          Game ringan, poin dari topi, botol, VR doodle. <br/>
-          Pause, restart, badge (Kite Dreamer–Kite Legend–Kite High Flyer).
+          Light game, Collect points from hats, bottles, VR doodles. <br/>
+          Pause, restart, Earn badges 🏅.
         </p>
         <a href="/fly-game" className="btn-outline mt-6 inline-block">Play Kite Fly Game</a>
       </article>
@@ -36,8 +36,8 @@ export default function IdeasRow() {
           <h3 className="h-playfair text-2xl font-bold">Kite Frame</h3>
         </div>
         <p className="mt-4 text-sm leading-relaxed">
-          Upload hasil dari topi dan game. <br/>
-          Badge & karya mingguan.
+          Works from Selected Communities. <br/>
+          Maybe you are one of them..
         </p>
         <a href="/frame" className="mt-6 inline-block bg-cream text-brown rounded-full px-6 py-2 font-semibold shadow-retro">Open Community Gallery</a>
       </article>

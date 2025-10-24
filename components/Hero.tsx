@@ -8,6 +8,7 @@ export default function Hero() {
       <img src="/images/cloud-2.svg" alt="" className="cloud absolute left-1/3 top-10 w-24" />
       <img src="/images/cloud-1.svg" alt="" className="cloud absolute right-6 top-8 w-32" />
       <img src="/images/cloud-2.svg" alt="" className="cloud absolute right-1/4 top-24 w-24" />
+      <img src="/images/cloud-1.svg" alt="" className="cloud absolute right-10 bottom-8 w-40" />
       <img src="/images/cloud-1.svg" alt="" className="cloud absolute left-10 bottom-8 w-40 opacity-70" />
 
       {/* Kites */}

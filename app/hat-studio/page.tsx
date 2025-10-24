@@ -221,6 +221,35 @@ export default function Page() {
           )}
         </div>
       </div>
+      {/* Decorative background (clouds + kites) */}
+<div
+  className="pointer-events-none select-none absolute inset-0 -z-10"
+  aria-hidden="true"
+>
+  {/* Clouds */}
+  <img
+    src="/images/cloud-1.svg"
+    alt=""
+    className="hidden sm:block absolute top-24 left-6 w-28 opacity-60"
+  />
+  <img
+    src="/images/cloud-2.svg"
+    alt=""
+    className="hidden sm:block absolute top-40 right-10 w-32 opacity-60"
+  />
+
+  {/* Kites */}
+  <img
+    src="/images/kite-left.svg"
+    alt=""
+    className="hidden sm:block absolute bottom-10 left-[-10px] w-24 opacity-90"
+  />
+  <img
+    src="/images/kite-right.svg"
+    alt=""
+    className="hidden sm:block absolute bottom-24 right-[-10px] w-24 opacity-90"
+  />
+</div>
     </main>
   );
 }

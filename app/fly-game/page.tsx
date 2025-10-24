@@ -18,11 +18,12 @@ type SpawnedItem = {
 };
 
 const GAME_SECONDS = 60;
-const BASE_WIDTH = 420;
-const BASE_HEIGHT = 600; // lebih pendek biar nyaman di HP
+const BASE_WIDTH = 960; // wider layout
+const BASE_HEIGHT = 540; // 16:9 aspect ratio
 
 export default function KiteFlyGamePage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
   const kiteImgRef = useRef<HTMLImageElement | null>(null);
   const hatImgRef = useRef<HTMLImageElement | null>(null);
   const bottleImgRef = useRef<HTMLImageElement | null>(null);
@@ -49,6 +50,7 @@ export default function KiteFlyGamePage() {
   const rafRef = useRef<number | null>(null);
   const lastTsRef = useRef<number | null>(null);
   const countdownRef = useRef<number | null>(null);
+
   const dprRef = useRef(1);
   const draggingRef = useRef(false);
 
@@ -58,12 +60,16 @@ export default function KiteFlyGamePage() {
     new Promise<void>((resolve) => {
       const kite = new Image();
       kite.src = "/images/kite.png";
+
       const hat = new Image();
       hat.src = "/images/hat.png";
+
       const bottle = new Image();
       bottle.src = "/images/bottle.png";
+
       const vr = new Image();
       vr.src = "/images/vr.png";
+
       let loaded = 0;
       const onLoad = () => {
         loaded += 1;
@@ -75,6 +81,7 @@ export default function KiteFlyGamePage() {
           resolve();
         }
       };
+
       kite.onload = onLoad;
       hat.onload = onLoad;
       bottle.onload = onLoad;
@@ -84,10 +91,12 @@ export default function KiteFlyGamePage() {
   const fitCanvasToParent = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
     const parent = canvas.parentElement!;
     const parentW = parent.clientWidth;
-    const targetW = Math.min(parentW, 520);
+    const targetW = Math.min(parentW, 1100);
     const targetH = (targetW / BASE_WIDTH) * BASE_HEIGHT;
+
     const dpr = window.devicePixelRatio || 1;
     dprRef.current = dpr;
     canvas.style.width = `${targetW}px`;
@@ -102,20 +111,20 @@ export default function KiteFlyGamePage() {
     g.addColorStop(1, "#F5E2CC");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w, h);
+
     ctx.beginPath();
     ctx.arc(w * 0.15, h * 0.18, 80, 0, Math.PI * 2);
     ctx.fillStyle = "rgba(255, 220, 170, 0.35)";
     ctx.fill();
   };
 
-  // 🩶 Awan putih semi abu
   const drawCloud = (ctx: CanvasRenderingContext2D, x: number, y: number, scale = 1) => {
     ctx.save();
     ctx.translate(x, y);
     ctx.scale(scale, scale);
     ctx.fillStyle = "rgba(255,255,255,0.9)";
-    ctx.strokeStyle = "rgba(180,180,180,0.4)";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#d6d3d1";
+    ctx.lineWidth = 1.5;
     const blob = (bx: number, by: number, r: number) => {
       ctx.beginPath();
       ctx.arc(bx, by, r, 0, Math.PI * 2);
@@ -132,31 +141,35 @@ export default function KiteFlyGamePage() {
     ctx.restore();
   };
 
-  const rectsOverlap = (a: any, b: any) =>
+  const rectsOverlap = (a: { x: number; y: number; w: number; h: number }, b: { x: number; y: number; w: number; h: number }) =>
     !(a.x + a.w < b.x || a.x > b.x + b.w || a.y + a.h < b.y || a.y > b.y + b.h);
 
   const spawnGood = () => {
     const types: GoodType[] = ["hat", "bottle", "vr"];
     const goodType = types[Math.floor(Math.random() * types.length)];
-    const w = 44, h = 44;
+    const w = 44;
+    const h = 44;
     itemsRef.current.push({
       kind: "good",
       goodType,
       x: Math.random() * (BASE_WIDTH - w),
       y: -h - 10,
-      w, h,
+      w,
+      h,
       vy: 90 + Math.random() * 70,
       swingPhase: Math.random() * Math.PI * 2,
     });
   };
 
   const spawnCloud = () => {
-    const w = 64, h = 40;
+    const w = 64;
+    const h = 40;
     itemsRef.current.push({
       kind: "cloud",
       x: Math.random() * (BASE_WIDTH - w),
       y: -h - 10,
-      w, h,
+      w,
+      h,
       vy: 60 + Math.random() * 40,
       swingPhase: Math.random() * Math.PI * 2,
     });
@@ -186,24 +199,30 @@ export default function KiteFlyGamePage() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
     const dpr = dprRef.current;
     const w = (canvas.width / dpr) | 0;
     const h = (canvas.height / dpr) | 0;
+
     const last = lastTsRef.current ?? ts;
     const dt = Math.min(0.034, (ts - last) / 1000);
     lastTsRef.current = ts;
+
     ctx.save();
     ctx.scale(dpr, dpr);
     drawBackground(ctx, w, h);
+
     const t = ts / 1000;
     for (let i = 0; i < 3; i++) {
-      const cx = ((t * 12 + i * 140) % (w + 160)) - 80;
+      const cx = ((t * 12 + i * 200) % (w + 160)) - 80;
       const cy = 60 + i * 50;
       drawCloud(ctx, cx, cy, 1 + i * 0.08);
     }
-    const speed = 200;
+
+    const speed = 250;
     kiteVX.current = (movingRight.current ? speed : 0) - (movingLeft.current ? speed : 0);
     kiteX.current = clamp(kiteX.current + kiteVX.current * dt, 8, BASE_WIDTH - kiteW.current - 8);
+
     lastSpawnGood.current += dt;
     lastSpawnCloud.current += dt;
     if (lastSpawnGood.current > 0.7) {
@@ -214,17 +233,26 @@ export default function KiteFlyGamePage() {
       lastSpawnCloud.current = 0;
       spawnCloud();
     }
+
     const items = itemsRef.current;
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
       const sway = Math.sin((it.swingPhase ?? 0) + t * 2) * (it.kind === "good" ? 10 : 6);
       it.y += it.vy * dt;
       it.x = clamp(it.x + sway * dt, 0, BASE_WIDTH - it.w);
+
       if (it.kind === "good") {
         const img =
-          it.goodType === "hat" ? hatImgRef.current : it.goodType === "bottle" ? bottleImgRef.current : vrImgRef.current;
+          it.goodType === "hat"
+            ? hatImgRef.current
+            : it.goodType === "bottle"
+            ? bottleImgRef.current
+            : vrImgRef.current;
         if (img) ctx.drawImage(img, it.x, it.y, it.w, it.h);
-      } else drawCloud(ctx, it.x, it.y, 0.9);
+      } else {
+        drawCloud(ctx, it.x, it.y, 0.9);
+      }
+
       const kiteRect = { x: kiteX.current, y: kiteY.current, w: kiteW.current, h: kiteH.current };
       const itemRect = { x: it.x, y: it.y, w: it.w, h: it.h };
       if (rectsOverlap(kiteRect, itemRect)) {
@@ -233,23 +261,30 @@ export default function KiteFlyGamePage() {
         items.splice(i, 1);
         continue;
       }
+
       if (it.y > BASE_HEIGHT + 60) items.splice(i, 1);
     }
+
     const kiteImg = kiteImgRef.current;
     if (kiteImg) ctx.drawImage(kiteImg, kiteX.current, kiteY.current, kiteW.current, kiteH.current);
+
     ctx.fillStyle = "#3a2e2a";
-    ctx.font = "600 16px Poppins";
+    ctx.font = "600 16px Poppins, system-ui, sans-serif";
     ctx.fillText(`Score: ${score}`, 16, 28);
     ctx.textAlign = "right";
     ctx.fillText(`Time: ${timeLeft}s`, w - 16, 28);
+    ctx.textAlign = "left";
+
     ctx.restore();
+
     if (running && !gameOver) rafRef.current = requestAnimationFrame(tick);
   };
 
   useEffect(() => {
     fitCanvasToParent();
-    window.addEventListener("resize", fitCanvasToParent);
-    return () => window.removeEventListener("resize", fitCanvasToParent);
+    const onResize = () => fitCanvasToParent();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   useEffect(() => {
@@ -258,6 +293,7 @@ export default function KiteFlyGamePage() {
 
   useEffect(() => {
     if (!running || gameOver) return;
+
     if (countdownRef.current) clearInterval(countdownRef.current);
     countdownRef.current = window.setInterval(() => {
       setTimeLeft((t) => {
@@ -265,14 +301,17 @@ export default function KiteFlyGamePage() {
           clearInterval(countdownRef.current!);
           setRunning(false);
           setGameOver(true);
-          setBadge(computeBadge(score));
+          const b = computeBadge(score);
+          setBadge(b);
           return 0;
         }
         return t - 1;
       });
     }, 1000) as unknown as number;
+
     lastTsRef.current = null;
     rafRef.current = requestAnimationFrame(tick);
+
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (countdownRef.current) clearInterval(countdownRef.current);
@@ -298,11 +337,11 @@ export default function KiteFlyGamePage() {
 
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     draggingRef.current = true;
-    e.currentTarget.setPointerCapture(e.pointerId);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     draggingRef.current = false;
-    e.currentTarget.releasePointerCapture(e.pointerId);
+    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
   };
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!draggingRef.current) return;
@@ -324,71 +363,62 @@ export default function KiteFlyGamePage() {
   const playAgain = () => startGame();
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-start px-4 pt-20 pb-8 bg-[#FDF9F3]">
-      <div className="mx-auto max-w-[480px] w-full">
-        <h1 className="text-center font-playfair text-3xl text-[#3a2e2a] mb-1">Kite Fly Game</h1>
-        <p className="text-center text-sm text-[#6b5a52] mb-5">
-          Move the kite left-right. Catch the hat, bottle, and VR (+10). Avoid the clouds (-10). Time: 60 seconds.
-        </p>
+    <main className="min-h-screen px-4 py-12 bg-[#FDF9F3] flex flex-col items-center">
+      <h1 className="font-playfair text-4xl md:text-5xl text-[#3a2e2a] mb-2">Kite Fly Game</h1>
+      <p className="text-sm text-[#6b5a52] mb-6 text-center">
+        Move the kite left–right. Catch the hat, bottle, and VR (+10). Avoid clouds (−10). Time: 60 seconds.
+      </p>
 
-        <div className="relative rounded-xl shadow-sm border border-[#eadfce] bg-white/70 p-2 w-full max-w-sm mx-auto">
-          <div className="absolute top-3 left-3 text-[13px] font-semibold text-[#3a2e2a] bg-white/70 rounded px-2 py-1 shadow-sm">
-            Score: {score}
-          </div>
-          <div className="absolute top-3 right-3 text-[13px] font-semibold text-[#3a2e2a] bg-white/70 rounded px-2 py-1 shadow-sm">
-            Time: {timeLeft}s
-          </div>
+      <div className="relative w-full max-w-[1100px] aspect-[16/9] rounded-xl shadow-md border border-[#eadfce] bg-white/70 overflow-hidden">
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 w-full h-full touch-none"
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          onPointerMove={handlePointerMove}
+        />
 
-          <div className="w-full flex justify-center">
-            <canvas
-              ref={canvasRef}
-              className="rounded-lg bg-white/0 touch-none"
-              onPointerDown={handlePointerDown}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerUp}
-              onPointerMove={handlePointerMove}
-            />
+        {!running && !gameOver && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <button
+              onClick={startGame}
+              className="px-6 py-3 rounded-lg bg-[#B17C4A] text-white font-medium shadow hover:bg-[#a06e3f]"
+            >
+              Play Kite Fly Game
+            </button>
           </div>
+        )}
 
-          {!running && !gameOver && (
-            <div className="absolute inset-0 flex items-center justify-center">
+        {gameOver && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FDF9F3]/80 text-center rounded-xl">
+            <h2 className="font-playfair text-3xl text-[#3a2e2a] mb-2">Game Over</h2>
+            <p className="text-[#53443f] mb-1">
+              Your Score: <span className="font-semibold">{score}</span>
+            </p>
+            <p className="text-[#53443f] mb-4">
+              Badge: <span className="font-semibold">{badge ?? computeBadge(score)}</span>
+            </p>
+            <div className="flex gap-3">
               <button
-                onClick={startGame}
-                className="px-5 py-3 rounded-lg bg-[#B17C4A] text-white font-medium shadow hover:bg-[#a06e3f] transition"
+                onClick={playAgain}
+                className="px-4 py-2 rounded-md bg-[#B17C4A] text-white shadow hover:bg-[#a06e3f]"
               >
-                Play Kite Fly Game
+                Play Again
               </button>
+              <Link
+                href="/"
+                className="px-4 py-2 rounded-md bg-white border border-[#e5d8c6] text-[#3a2e2a] shadow hover:bg-[#fffaf4]"
+              >
+                Back to Home
+              </Link>
             </div>
-          )}
+          </div>
+        )}
+      </div>
 
-          {gameOver && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FDF9F3]/80 rounded-xl text-center px-4">
-              <h2 className="font-playfair text-3xl text-[#3a2e2a] mb-2">Game Over</h2>
-              <p className="text-[#53443f] mb-1">Your Score: <span className="font-semibold">{score}</span></p>
-              <p className="text-[#53443f] mb-4">
-                Badge: <span className="font-semibold">{badge ?? computeBadge(score)}</span>
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={playAgain}
-                  className="px-4 py-2 rounded-md bg-[#B17C4A] text-white shadow hover:bg-[#a06e3f]"
-                >
-                  Play Again
-                </button>
-                <Link
-                  href="/"
-                  className="px-4 py-2 rounded-md bg-white border border-[#e5d8c6] text-[#3a2e2a] shadow hover:bg-[#fffaf4]"
-                >
-                  Back to Home
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="mt-4 text-center text-xs text-[#6b5a52]">
-          Desktop: ← → • Mobile: Drag on the canvas
-        </div>
+      <div className="mt-4 text-center text-xs text-[#6b5a52]">
+        Desktop: ← → to move • Mobile: drag on canvas
       </div>
     </main>
   );

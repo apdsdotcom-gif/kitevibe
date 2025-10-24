@@ -36,8 +36,8 @@ export default function IdeasRow() {
           <h3 className="h-playfair text-2xl font-bold">Kite Frame</h3>
         </div>
         <p className="mt-4 text-sm leading-relaxed">
-          Works from Selected Communities. <br/>
-          Maybe you are one of them..
+          Works from Selected Communities From X and Discord. <br/>
+          Maybe you are one of them.
         </p>
         <a href="/frame" className="mt-6 inline-block bg-cream text-brown rounded-full px-6 py-2 font-semibold shadow-retro">Open Community Gallery</a>
       </article>

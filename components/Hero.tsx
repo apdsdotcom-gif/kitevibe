@@ -12,8 +12,8 @@ export default function Hero() {
       <img src="/images/cloud-1.svg" alt="" className="cloud absolute left-10 bottom-8 w-40 opacity-70" />
 
       {/* Kites */}
-      <img src="/images/kite-left.svg" alt="" className="kite absolute left-6 md:left-12 top-24 w-20" />
-      <img src="/images/kite-right.svg" alt="" className="kite absolute right-6 md:right-12 top-16 w-20 [animation-duration:9s]" />
+      <img src="/images/kite-left.svg" alt="" className="kite absolute left-6 md:left-12 top-40 w-20" />
+      <img src="/images/kite-right.svg" alt="" className="kite absolute right-6 md:right-12 top-40 w-20 [animation-duration:9s]" />
 
       <div className="mx-auto max-w-4xl px-4 text-center py-20 md:py-24">
         <h1 className="h-playfair text-5xl md:text-7xl font-extrabold tracking-tight">KITE VIBE</h1>

@@ -18,7 +18,7 @@ type SpawnedItem = {
 };
 
 const GAME_SECONDS = 60;
-const BASE_WIDTH = 420;
+const BASE_WIDTH = 480;
 const BASE_HEIGHT = 720;
 
 export default function KiteFlyGamePage() {
@@ -36,9 +36,9 @@ export default function KiteFlyGamePage() {
   const [badge, setBadge] = useState<"Kite Dreamer" | "Kite High Flyer" | "Kite Legend" | null>(null);
 
   const kiteX = useRef(BASE_WIDTH / 2);
-  const kiteY = useRef(BASE_HEIGHT - 110);
-  const kiteW = useRef(130);
-  const kiteH = useRef(145);
+  const kiteY = useRef(BASE_HEIGHT - 130);
+  const kiteW = useRef(88);
+  const kiteH = useRef(100);
   const kiteVX = useRef(0);
   const movingLeft = useRef(false);
   const movingRight = useRef(false);
@@ -104,13 +104,15 @@ export default function KiteFlyGamePage() {
 
   const drawBackground = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
     const g = ctx.createLinearGradient(0, 0, 0, h);
-    g.addColorStop(0, "#FFF8E7");
-    g.addColorStop(0.6, "#FFE9C6");
-    g.addColorStop(1, "#F5DDB2");
+    g.addColorStop(0, "#FFF6EA");
+    g.addColorStop(1, "#F5E2CC");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w, h);
-    ctx.fillStyle = "rgba(230,190,140,0.35)";
-    ctx.fillRect(0, h * 0.85, w, h * 0.15);
+
+    ctx.beginPath();
+    ctx.arc(w * 0.15, h * 0.18, 80, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255, 220, 170, 0.4)";
+    ctx.fill();
   };
 
   const drawCloud = (ctx: CanvasRenderingContext2D, x: number, y: number, scale = 1) => {
@@ -118,10 +120,13 @@ export default function KiteFlyGamePage() {
     ctx.translate(x, y);
     ctx.scale(scale, scale);
     ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.strokeStyle = "rgba(150,130,110,0.25)";
+    ctx.lineWidth = 1;
     const blob = (bx: number, by: number, r: number) => {
       ctx.beginPath();
       ctx.arc(bx, by, r, 0, Math.PI * 2);
       ctx.fill();
+      ctx.stroke();
     };
     blob(0, 12, 18);
     blob(18, 8, 22);
@@ -129,6 +134,7 @@ export default function KiteFlyGamePage() {
     ctx.beginPath();
     ctx.roundRect(-6, 20, 56, 18, 9);
     ctx.fill();
+    ctx.stroke();
     ctx.restore();
   };
 
@@ -138,8 +144,8 @@ export default function KiteFlyGamePage() {
   const spawnGood = () => {
     const types: GoodType[] = ["hat", "bottle", "vr"];
     const goodType = types[Math.floor(Math.random() * types.length)];
-    const w = 44;
-    const h = 44;
+    const w = 58;
+    const h = 58;
     itemsRef.current.push({
       kind: "good",
       goodType,
@@ -147,7 +153,7 @@ export default function KiteFlyGamePage() {
       y: -h - 10,
       w,
       h,
-      vy: 75 + Math.random() * 55,
+      vy: 90 + Math.random() * 70,
       swingPhase: Math.random() * Math.PI * 2,
     });
   };
@@ -161,7 +167,7 @@ export default function KiteFlyGamePage() {
       y: -h - 10,
       w,
       h,
-      vy: 50 + Math.random() * 35,
+      vy: 60 + Math.random() * 40,
       swingPhase: Math.random() * Math.PI * 2,
     });
   };
@@ -175,7 +181,7 @@ export default function KiteFlyGamePage() {
     lastSpawnGood.current = 0;
     lastSpawnCloud.current = 0;
     kiteX.current = BASE_WIDTH / 2;
-    kiteY.current = BASE_HEIGHT - 110;
+    kiteY.current = BASE_HEIGHT - 130;
     kiteVX.current = 0;
   };
 
@@ -190,11 +196,10 @@ export default function KiteFlyGamePage() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    ctx.imageSmoothingEnabled = false;
 
     const dpr = dprRef.current;
-    const w = (canvas.width / dpr) | 0;
-    const h = (canvas.height / dpr) | 0;
+    const w = canvas.width / dpr;
+    const h = canvas.height / dpr;
 
     const last = lastTsRef.current ?? ts;
     const dt = Math.min(0.034, (ts - last) / 1000);
@@ -206,7 +211,7 @@ export default function KiteFlyGamePage() {
 
     const t = ts / 1000;
     for (let i = 0; i < 3; i++) {
-      const cx = ((t * 12 + i * 140) % (w + 160)) - 80;
+      const cx = ((t * 12 + i * 160) % (w + 160)) - 80;
       const cy = 60 + i * 50;
       drawCloud(ctx, cx, cy, 1 + i * 0.08);
     }
@@ -257,17 +262,16 @@ export default function KiteFlyGamePage() {
     if (kiteImg) ctx.drawImage(kiteImg, kiteX.current, kiteY.current, kiteW.current, kiteH.current);
 
     ctx.fillStyle = "#3a2e2a";
-    ctx.font = "600 16px Poppins, system-ui, sans-serif";
+    ctx.font = "600 16px Poppins, sans-serif";
     ctx.fillText(`Score: ${score}`, 16, 28);
     ctx.textAlign = "right";
     ctx.fillText(`Time: ${timeLeft}s`, w - 16, 28);
     ctx.textAlign = "left";
+
     ctx.restore();
 
     if (running && !gameOver) rafRef.current = requestAnimationFrame(tick);
   };
-
-  // Effects & inputs tetap sama seperti sebelumnya...
 
   useEffect(() => {
     fitCanvasToParent();
@@ -296,8 +300,10 @@ export default function KiteFlyGamePage() {
         return t - 1;
       });
     }, 1000) as unknown as number;
+
     lastTsRef.current = null;
     rafRef.current = requestAnimationFrame(tick);
+
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (countdownRef.current) clearInterval(countdownRef.current);
@@ -349,25 +355,25 @@ export default function KiteFlyGamePage() {
   const playAgain = () => startGame();
 
   return (
-    <main className="min-h-screen px-4 py-16 bg-[#FDF9F3] flex flex-col items-center justify-center">
-      <div className="mx-auto max-w-[640px]">
-        <h1 className="text-center font-playfair text-3xl md:text-4xl text-[#3a2e2a] mb-2">Kite Fly Game</h1>
-        <p className="text-center text-sm text-[#6b5a52] mb-6">
+    <main className="min-h-[calc(100vh-64px)] px-4 pt-24 pb-12 bg-[#FDF9F3] flex flex-col items-center">
+      <div className="max-w-[560px] w-full text-center">
+        <h1 className="font-playfair text-3xl md:text-4xl text-[#3a2e2a] mb-2 mt-6">Kite Fly Game</h1>
+        <p className="text-sm text-[#6b5a52] mb-5">
           Move the kite left-right. Catch the hat, bottle, and VR (+10). Avoid the clouds (-10). Time: 60 seconds.
         </p>
 
-        <div className="relative rounded-xl shadow-md border border-[#eadfce] bg-white/70 p-3">
-          <div className="absolute top-3 left-3 z-10 text-[13px] font-semibold text-[#3a2e2a] bg-white/70 rounded px-2 py-1 shadow-sm">
+        <div className="relative rounded-xl shadow-sm border border-[#eadfce] bg-white/70 p-3">
+          <div className="absolute top-3 left-3 text-[13px] font-semibold text-[#3a2e2a] bg-white/70 rounded px-2 py-1 shadow-sm">
             Score: {score}
           </div>
-          <div className="absolute top-3 right-3 z-10 text-[13px] font-semibold text-[#3a2e2a] bg-white/70 rounded px-2 py-1 shadow-sm">
+          <div className="absolute top-3 right-3 text-[13px] font-semibold text-[#3a2e2a] bg-white/70 rounded px-2 py-1 shadow-sm">
             Time: {timeLeft}s
           </div>
 
           <div className="w-full flex justify-center">
             <canvas
               ref={canvasRef}
-              className="rounded-lg bg-white/0 touch-none"
+              className="rounded-lg bg-transparent touch-none"
               onPointerDown={handlePointerDown}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerUp}
@@ -413,8 +419,8 @@ export default function KiteFlyGamePage() {
           )}
         </div>
 
-        <div className="mt-4 text-center text-xs text-[#6b5a52]">
-          Desktop: ← → to move • Mobile: drag on the canvas
+        <div className="mt-4 text-xs text-[#6b5a52]">
+          Desktop: ← → to move • Mobile: drag the kite
         </div>
       </div>
     </main>

@@ -5,7 +5,7 @@ export default function Hero() {
     <section className="pt-28 hero-bg relative">
       {/* Animated clouds */}
       <img src="/images/cloud-1.svg" alt="" className="cloud absolute left-4 top-6 w-28" />
-      <img src="/images/cloud-2.svg" alt="" className="cloud absolute left-1/3 top-10 w-24" />
+      <img src="/images/cloud-2.svg" alt="" className="cloud absolute left-1/4 top-24 w-24" />
       <img src="/images/cloud-1.svg" alt="" className="cloud absolute right-6 top-8 w-32" />
       <img src="/images/cloud-2.svg" alt="" className="cloud absolute right-1/4 top-24 w-24" />
       <img src="/images/cloud-1.svg" alt="" className="cloud absolute right-10 bottom-8 w-40" />

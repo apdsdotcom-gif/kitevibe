@@ -104,14 +104,14 @@ export default function KiteFlyGamePage() {
 
   const drawBackground = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
     const g = ctx.createLinearGradient(0, 0, 0, h);
-    g.addColorStop(0, "#FFF6EA");
-    g.addColorStop(1, "#F5E2CC");
+    g.addColorStop(0, "#FFF7EE");
+    g.addColorStop(1, "#F7E6D2");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w, h);
 
     ctx.beginPath();
     ctx.arc(w * 0.15, h * 0.18, 80, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255, 220, 170, 0.4)";
+    ctx.fillStyle = "rgba(255, 220, 170, 0.45)";
     ctx.fill();
   };
 
@@ -119,8 +119,8 @@ export default function KiteFlyGamePage() {
     ctx.save();
     ctx.translate(x, y);
     ctx.scale(scale, scale);
-    ctx.fillStyle = "rgba(255,255,255,0.85)";
-    ctx.strokeStyle = "rgba(150,130,110,0.25)";
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.strokeStyle = "rgba(150,130,110,0.2)";
     ctx.lineWidth = 1;
     const blob = (bx: number, by: number, r: number) => {
       ctx.beginPath();
@@ -153,7 +153,7 @@ export default function KiteFlyGamePage() {
       y: -h - 10,
       w,
       h,
-      vy: 90 + Math.random() * 70,
+      vy: 85 + Math.random() * 60,
       swingPhase: Math.random() * Math.PI * 2,
     });
   };
@@ -167,7 +167,7 @@ export default function KiteFlyGamePage() {
       y: -h - 10,
       w,
       h,
-      vy: 60 + Math.random() * 40,
+      vy: 55 + Math.random() * 35,
       swingPhase: Math.random() * Math.PI * 2,
     });
   };
@@ -207,6 +207,9 @@ export default function KiteFlyGamePage() {
 
     ctx.save();
     ctx.scale(dpr, dpr);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
     drawBackground(ctx, w, h);
 
     const t = ts / 1000;
@@ -355,21 +358,14 @@ export default function KiteFlyGamePage() {
   const playAgain = () => startGame();
 
   return (
-    <main className="min-h-[calc(100vh-64px)] px-4 pt-24 pb-12 bg-[#FDF9F3] flex flex-col items-center">
-      <div className="max-w-[560px] w-full text-center">
-        <h1 className="font-playfair text-3xl md:text-4xl text-[#3a2e2a] mb-2 mt-6">Kite Fly Game</h1>
-        <p className="text-sm text-[#6b5a52] mb-5">
+    <main className="min-h-[calc(100vh-64px)] px-4 pt-20 pb-12 bg-[#FDF9F3] flex flex-col items-center">
+      <div className="max-w-[620px] w-full text-center">
+        <h1 className="font-playfair text-3xl md:text-4xl text-[#3a2e2a] mb-2 mt-8">Kite Fly Game</h1>
+        <p className="text-sm text-[#6b5a52] mb-6">
           Move the kite left-right. Catch the hat, bottle, and VR (+10). Avoid the clouds (-10). Time: 60 seconds.
         </p>
 
         <div className="relative rounded-xl shadow-sm border border-[#eadfce] bg-white/70 p-3">
-          <div className="absolute top-3 left-3 text-[13px] font-semibold text-[#3a2e2a] bg-white/70 rounded px-2 py-1 shadow-sm">
-            Score: {score}
-          </div>
-          <div className="absolute top-3 right-3 text-[13px] font-semibold text-[#3a2e2a] bg-white/70 rounded px-2 py-1 shadow-sm">
-            Time: {timeLeft}s
-          </div>
-
           <div className="w-full flex justify-center">
             <canvas
               ref={canvasRef}
@@ -419,9 +415,7 @@ export default function KiteFlyGamePage() {
           )}
         </div>
 
-        <div className="mt-4 text-xs text-[#6b5a52]">
-          Desktop: ← → to move • Mobile: drag the kite
-        </div>
+        <div className="mt-4 text-xs text-[#6b5a52]">Desktop: ← → to move • Mobile: drag the kite</div>
       </div>
     </main>
   );

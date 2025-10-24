@@ -116,7 +116,7 @@ export default function Page() {
         Upload your photo, adjust your hat preview, then download your final result.
       </p>
 
-      <div className="flex flex-col md:flex-row justify-center items-start gap-10">
+      <div className="flex flex-col md:flex-row justify-center items-center gap-10">
         {/* Main Editor */}
         <div
           className="relative bg-white/90 rounded-2xl shadow-lg p-4 w-[300px] flex items-center justify-center overflow-hidden transition-all"

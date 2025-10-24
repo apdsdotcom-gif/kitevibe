@@ -222,10 +222,11 @@ export default function Page() {
         </div>
       </div>
       {/* Clouds */}
-<img src="/images/cloud-1.svg" alt="Cloud" className="absolute left-4 top-6 w-28 opacity-70" />
-<img src="/images/cloud-2.svg" alt="Cloud" className="absolute left-1/3 top-10 w-24 opacity-70" />
-<img src="/images/cloud-3.svg" alt="Cloud" className="absolute right-1/4 top-8 w-32 opacity-70" />
-<img src="/images/cloud-4.svg" alt="Cloud" className="absolute right-10 bottom-8 w-40 opacity-70" />
+ <img src="/images/cloud-1.svg" alt="" className="cloud absolute left-4 top-6 w-28" />
+      <img src="/images/cloud-2.svg" alt="" className="cloud absolute left-1/3 top-10 w-24" />
+      <img src="/images/cloud-1.svg" alt="" className="cloud absolute right-6 top-8 w-32" />
+      <img src="/images/cloud-2.svg" alt="" className="cloud absolute right-1/4 top-24 w-24" />
+      <img src="/images/cloud-1.svg" alt="" className="cloud absolute left-10 bottom-8 w-40 opacity-70" />
 
 {/* Kites */}
 <img src="/images/kite-left.svg" alt="Kite Left" className="absolute left-6 md:left-12 top-24 w-20" />

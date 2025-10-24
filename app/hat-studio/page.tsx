@@ -110,7 +110,7 @@ export default function Page() {
   };
 
   return (
-    <main className="min-h-screen py-24 px-4 bg-[#FDF9F3] text-center transition-all duration-300">
+    <main className="relative overflow-hidden min-h-screen py-24 px-4 bg-[#FDF9F3] text-center transition-all duration-300">
       <h1 className="font-playfair text-4xl mb-3 text-[#3b2f1b]">Kite Hat Studio</h1>
       <p className="text-sm mb-10 text-[#5b4636]">
         Upload your photo, adjust your hat preview, then download your final result.

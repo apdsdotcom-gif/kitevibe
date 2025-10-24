@@ -110,7 +110,7 @@ export default function Page() {
   };
 
   return (
-    <main className="min-h-screen py-24 px-4 bg-[#FDF9F3] text-center transition-all duration-300">
+    <main className="relative overflow-hidden min-h-screen py-20 px-4 bg-[#FDF9F3] text-center">
       <h1 className="font-playfair text-4xl mb-3 text-[#3b2f1b]">Kite Hat Studio</h1>
       <p className="text-sm mb-10 text-[#5b4636]">
         Upload your photo, adjust your hat preview, then download your final result.
@@ -221,6 +221,15 @@ export default function Page() {
           )}
         </div>
       </div>
+      {/* Clouds */}
+<img src="/images/cloud-1.svg" alt="Cloud" className="absolute left-4 top-6 w-28 opacity-70" />
+<img src="/images/cloud-2.svg" alt="Cloud" className="absolute left-1/3 top-10 w-24 opacity-70" />
+<img src="/images/cloud-3.svg" alt="Cloud" className="absolute right-1/4 top-8 w-32 opacity-70" />
+<img src="/images/cloud-4.svg" alt="Cloud" className="absolute right-10 bottom-8 w-40 opacity-70" />
+
+{/* Kites */}
+<img src="/images/kite-left.svg" alt="Kite Left" className="absolute left-6 md:left-12 top-24 w-20" />
+<img src="/images/kite-right.svg" alt="Kite Right" className="absolute right-6 md:right-12 top-16 w-20" />
     </main>
   );
 }

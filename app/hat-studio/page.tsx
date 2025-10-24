@@ -228,7 +228,7 @@ export default function Page() {
       <img src="/images/cloud-2.svg" alt="" className="cloud absolute right-1/4 top-24 w-24" />
       <img src="/images/cloud-1.svg" alt="" className="cloud absolute left-10 bottom-8 w-40 opacity-70" />
 
-/* Kites */}
+{/* Kites */}
       <img src="/images/kite-left.svg" alt="" className="kite absolute left-6 md:left-12 top-24 w-20" />
       <img src="/images/kite-right.svg" alt="" className="kite absolute right-6 md:right-12 top-16 w-20 [animation-duration:9s]" />
     </main>

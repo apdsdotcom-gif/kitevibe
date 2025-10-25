@@ -25,17 +25,26 @@ const BASE_HEIGHT = 360;
 export default function KiteFlyGamePage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  // image refs
   const kiteImgRef = useRef<HTMLImageElement | null>(null);
   const hatImgRef = useRef<HTMLImageElement | null>(null);
   const bottleImgRef = useRef<HTMLImageElement | null>(null);
   const vrImgRef = useRef<HTMLImageElement | null>(null);
 
+  // state
   const [running, setRunning] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(GAME_SECONDS);
   const [badge, setBadge] = useState<BadgeName>("Kite Dreamer");
 
+  // refs for smooth update
+  const scoreRef = useRef(0);
+  const timeRef = useRef(GAME_SECONDS);
+  useEffect(() => { scoreRef.current = score; }, [score]);
+  useEffect(() => { timeRef.current = timeLeft; }, [timeLeft]);
+
+  // kite movement
   const kiteX = useRef(BASE_WIDTH / 2);
   const kiteY = useRef(BASE_HEIGHT - 110);
   const kiteW = useRef(72);
@@ -45,10 +54,12 @@ export default function KiteFlyGamePage() {
   const movingUp = useRef(false);
   const movingDown = useRef(false);
 
+  // items
   const itemsRef = useRef<SpawnedItem[]>([]);
   const lastSpawnGood = useRef(0);
   const lastSpawnCloud = useRef(0);
 
+  // loop
   const rafRef = useRef<number | null>(null);
   const lastTsRef = useRef<number | null>(null);
   const countdownRef = useRef<number | null>(null);
@@ -102,6 +113,7 @@ export default function KiteFlyGamePage() {
     g.addColorStop(1, "#CFEAFF");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w, h);
+
     ctx.beginPath();
     ctx.arc(w * 0.12, h * 0.18, 70, 0, Math.PI * 2);
     ctx.fillStyle = "rgba(255,220,170,0.35)";
@@ -195,6 +207,7 @@ export default function KiteFlyGamePage() {
     ctx.save();
     ctx.scale(dpr, dpr);
     (ctx as any).imageSmoothingEnabled = true;
+
     drawBackground(ctx, w, h);
 
     const t = ts / 1000;
@@ -252,13 +265,13 @@ export default function KiteFlyGamePage() {
     const kiteImg = kiteImgRef.current;
     if (kiteImg) ctx.drawImage(kiteImg, kiteX.current, renderY, kiteW.current, kiteH.current);
 
-    // ✅ HUD DI DALAM CANVAS
+    // ✅ HUD DI DALAM CANVAS (REALTIME)
     ctx.fillStyle = "#3a2e2a";
     ctx.font = "600 16px Poppins, system-ui, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText(`Score: ${score}`, 16, 26);
+    ctx.fillText(`Score: ${scoreRef.current}`, 16, 26);
     ctx.textAlign = "right";
-    ctx.fillText(`Time: ${timeLeft}s`, w - 16, 26);
+    ctx.fillText(`Time: ${timeRef.current}s`, w - 16, 26);
     ctx.textAlign = "left";
 
     ctx.restore();
@@ -277,14 +290,15 @@ export default function KiteFlyGamePage() {
 
   useEffect(() => {
     if (!running || gameOver) return;
-    // update badge dinamis berdasarkan skor saat ini
-    setBadge(score >= 600 ? "Kite Legend" : score >= 400 ? "Kite High Flyer" : "Kite Dreamer");
+
+    // update badge otomatis saat skor naik
+    const newBadge = computeBadge(score);
+    setBadge(newBadge);
   }, [score, running, gameOver]);
 
   useEffect(() => {
     if (!running || gameOver) return;
 
-    // countdown
     if (countdownRef.current) clearInterval(countdownRef.current);
     countdownRef.current = window.setInterval(() => {
       setTimeLeft((t) => {
@@ -298,7 +312,6 @@ export default function KiteFlyGamePage() {
       });
     }, 1000) as unknown as number;
 
-    // animation loop
     lastTsRef.current = null;
     rafRef.current = requestAnimationFrame(tick);
 
@@ -353,22 +366,9 @@ export default function KiteFlyGamePage() {
     kiteY.current = Math.max(8, Math.min(BASE_HEIGHT - kiteH.current - 8, relY * factorY - halfH));
   };
 
-  const resetGameState = () => {
-    setScore(0);
-    setTimeLeft(GAME_SECONDS);
-    setGameOver(false);
-    setBadge("Kite Dreamer");
-    itemsRef.current = [];
-    lastSpawnGood.current = 0;
-    lastSpawnCloud.current = 0;
-    kiteX.current = BASE_WIDTH / 2;
-    kiteY.current = BASE_HEIGHT - 110;
-  };
-
   const startGame = () => {
-    resetGameState();
+    resetGame();
     setRunning(true);
-    // biar layar gak kosong di awal
     spawnCloud();
     spawnCloud();
   };
@@ -386,8 +386,8 @@ export default function KiteFlyGamePage() {
           Move the kite left, right, and up. Catch hat, bottle, and VR (+10). Avoid clouds (-10). Time limit: 60s.
         </p>
 
-        <div className="relative rounded-xl shadow-sm border border-[#eadfce] bg-white/70 p-3">
-          {/* Canvas only (HUD di-canvas, tidak ada overlay luar) */}
+        {/* 🟤 Canvas container tanpa kotak putih */}
+        <div className="relative rounded-xl p-3 bg-transparent shadow-none border-none">
           <div className="w-full flex justify-center">
             <canvas
               ref={canvasRef}

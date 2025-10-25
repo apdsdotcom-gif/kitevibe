@@ -161,22 +161,47 @@ export default function KiteFlyGamePage() {
     !(a.x + a.w < b.x || a.x > b.x + b.w || a.y + a.h < b.y || a.y > b.y + b.h);
 
   const spawnGood = () => {
-    const types: GoodType[] = ["hat", "bottle", "vr"];
-    const goodType = types[Math.floor(Math.random() * types.length)];
-    const scale = window.innerWidth < 768 ? 0.9 : 1;
-    const w = 44 * scale;
-    const h = 44 * scale;
-    itemsRef.current.push({
-      kind: "good",
-      goodType,
-      x: Math.random() * (BASE_WIDTH - w),
-      y: -h - 10,
-      w,
-      h,
-      vy: 85 + Math.random() * 60,
-      swingPhase: Math.random() * Math.PI * 2,
-    });
-  };
+  const types: GoodType[] = ["hat", "bottle", "vr"];
+  const goodType = types[Math.floor(Math.random() * types.length)];
+
+  let w = 54;
+  let h = 54;
+
+  if (window.innerWidth < 768) {
+    if (goodType === "hat") {
+      w = 48;
+      h = 48;
+    } else if (goodType === "bottle") {
+      w = 46;
+      h = 46;
+    } else {
+      w = 50;
+      h = 50;
+    }
+  } else {
+    if (goodType === "hat") {
+      w = 54;
+      h = 54;
+    } else if (goodType === "bottle") {
+      w = 52;
+      h = 52;
+    } else {
+      w = 56;
+      h = 56;
+    }
+  }
+
+  itemsRef.current.push({
+    kind: "good",
+    goodType,
+    x: Math.random() * (BASE_WIDTH - w),
+    y: -h - 10,
+    w,
+    h,
+    vy: 85 + Math.random() * 60,
+    swingPhase: Math.random() * Math.PI * 2,
+  });
+};
 
   const spawnCloud = () => {
     const w = 64;

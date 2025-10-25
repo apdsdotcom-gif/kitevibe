@@ -14,14 +14,23 @@ export default function FramePage() {
     "https://x.com/microsoft/status/1819503456789000000",
     "https://x.com/googledevs/status/1817009876543000000",
     "https://x.com/nodejs/status/1815008765432100000",
+    "https://x.com/figma/status/1808008765432100000",
+    "https://x.com/astro/status/1806009876543210000",
+    "https://x.com/remix_run/status/1804009876543210000",
   ];
 
+  // memastikan semua tweet dari x.com
   const normalizeTweetUrl = (url: string) => url.replace("twitter.com", "x.com");
 
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://platform.twitter.com/widgets.js";
     script.async = true;
+    script.onload = () => {
+      if ((window as any).twttr?.widgets) {
+        (window as any).twttr.widgets.load();
+      }
+    };
     document.body.appendChild(script);
     return () => {
       document.body.removeChild(script);
@@ -30,14 +39,17 @@ export default function FramePage() {
 
   return (
     <main className="relative overflow-hidden min-h-screen py-20 px-4 bg-gradient-to-b from-[#FAF7F2] to-[#EAF3F9] text-center">
+      {/* Clouds and kites (you can add later) */}
+
       <div className="relative z-10 mx-auto max-w-6xl">
         <h1 className="font-playfair text-3xl md:text-4xl text-[#3a2e2a] mb-2">
           Kite Frame
         </h1>
         <p className="text-[#6b5a52] mb-10 text-sm md:text-base">
-          A showcase of the best creations and thoughts from our GO KITE AI community — directly from X.
+          A showcase of the best creations and thoughts from GO KITE AI community — directly from X.
         </p>
 
+        {/* Tweet grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
           {tweets.map((url, index) => (
             <div
@@ -64,6 +76,7 @@ export default function FramePage() {
         </div>
       </div>
 
+      {/* Animation */}
       <style jsx>{`
         @keyframes fadeIn {
           to {

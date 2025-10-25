@@ -19,7 +19,7 @@ type SpawnedItem = {
 };
 
 const GAME_SECONDS = 60;
-const BASE_WIDTH = 520;
+const BASE_WIDTH = 600;
 const BASE_HEIGHT = 340;
 
 const BADGE_THRESHOLDS: Record<BadgeName, number> = {

@@ -93,19 +93,20 @@ export default function KiteFlyGamePage() {
     });
 
   const fitCanvasToParent = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const parent = canvas.parentElement!;
-    const parentW = parent.clientWidth;
-    const targetW = Math.min(parentW * 0.95, 640);
-    const targetH = (targetW / BASE_WIDTH) * BASE_HEIGHT;
-    const dpr = window.devicePixelRatio || 1;
-    dprRef.current = dpr;
-    canvas.style.width = `${targetW}px`;
-    canvas.style.height = `${targetH}px`;
-    canvas.width = Math.floor(targetW * dpr);
-    canvas.height = Math.floor(targetH * dpr);
-  };
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+  const parent = canvas.parentElement!;
+  const parentW = parent.clientWidth;
+  const targetW = Math.min(parentW * 0.95, 640);
+  const aspect = window.innerWidth < 768 ? 1.1 : 1;
+  const targetH = (targetW / BASE_WIDTH) * BASE_HEIGHT * aspect;
+  const dpr = window.devicePixelRatio || 1;
+  dprRef.current = dpr;
+  canvas.style.width = `${targetW}px`;
+  canvas.style.height = `${targetH}px`;
+  canvas.width = Math.floor(targetW * dpr);
+  canvas.height = Math.floor(targetH * dpr);
+};
 
   const drawBackground = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
     const g = ctx.createLinearGradient(0, 0, 0, h);

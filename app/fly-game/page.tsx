@@ -263,15 +263,19 @@ export default function KiteFlyGamePage() {
       it.y += it.vy * dt;
       it.x = clamp(it.x + sway * dt, 0, BASE_WIDTH - it.w);
 
-      if (it.kind === "good") {
-        const img =
-          it.goodType === "hat"
-            ? hatImgRef.current
-            : it.goodType === "bottle"
-            ? bottleImgRef.current
-            : vrImgRef.current;
-        if (img) ctx.drawImage(img, it.x, it.y, it.w, it.h);
-      } else drawCloud(ctx, it.x, it.y, 0.9);
+if (it.kind === "good") {
+  const img =
+    it.goodType === "hat"
+      ? hatImgRef.current
+      : it.goodType === "bottle"
+      ? bottleImgRef.current
+      : vrImgRef.current;
+  if (img) {
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, it.x, it.y, it.w, it.h);
+  }
+} else drawCloud(ctx, it.x, it.y, 0.9);
 
       const kiteRect = { x: kiteX.current, y: renderY, w: kiteW.current, h: kiteH.current };
       const itemRect = { x: it.x, y: it.y, w: it.w, h: it.h };

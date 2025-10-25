@@ -92,16 +92,22 @@ export default function KiteFlyGamePage() {
 
   // 🧭 Auto-fit canvas
   const fitCanvasToParent = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  const canvas = canvasRef.current;
+  if (!canvas) return;
 
-    const parent = canvas.parentElement!;
-    const parentW = parent.clientWidth;
-    const parentH = window.innerHeight * 0.6;
-    const screenRatio = parentW / parentH;
-    const baseRatio = BASE_WIDTH / BASE_HEIGHT;
+  const parent = canvas.parentElement!;
+  const parentW = parent.clientWidth;
+  const isMobile = window.innerWidth < 768;
+  const parentH = window.innerHeight * (isMobile ? 0.7 : 0.6);
+  const screenRatio = parentW / parentH;
+  const baseRatio = BASE_WIDTH / BASE_HEIGHT;
 
-    let targetW, targetH;
+  let targetW, targetH;
+
+  if (isMobile) {
+    targetW = Math.min(parentW * 1.05, BASE_WIDTH);
+    targetH = (targetW / BASE_WIDTH) * BASE_HEIGHT;
+  } else {
     if (screenRatio < baseRatio) {
       targetW = parentW;
       targetH = (parentW / BASE_WIDTH) * BASE_HEIGHT;
@@ -109,15 +115,16 @@ export default function KiteFlyGamePage() {
       targetH = parentH;
       targetW = (parentH / BASE_HEIGHT) * BASE_WIDTH;
     }
+  }
 
-    const dpr = window.devicePixelRatio || 1;
-    dprRef.current = dpr;
+  const dpr = window.devicePixelRatio || 1;
+  dprRef.current = dpr;
 
-    canvas.style.width = `${targetW}px`;
-    canvas.style.height = `${targetH}px`;
-    canvas.width = Math.floor(targetW * dpr);
-    canvas.height = Math.floor(targetH * dpr);
-  };
+  canvas.style.width = `${targetW}px`;
+  canvas.style.height = `${targetH}px`;
+  canvas.width = Math.floor(targetW * dpr);
+  canvas.height = Math.floor(targetH * dpr);
+};
 
   const drawBackground = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
     const g = ctx.createLinearGradient(0, 0, 0, h);

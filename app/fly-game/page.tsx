@@ -383,14 +383,7 @@ export default function KiteFlyGamePage() {
         </p>
 
         <div className="relative rounded-xl shadow-sm border border-[#eadfce] bg-white/70 p-3">
-          {/* HUD */}
-          <div className="absolute top-3 left-3 text-[13px] font-semibold text-[#3a2e2a] bg-white/70 rounded px-2 py-1 shadow-sm">
-            Score: {score}
-          </div>
-          <div className="absolute top-3 right-3 text-[13px] font-semibold text-[#3a2e2a] bg-white/70 rounded px-2 py-1 shadow-sm">
-            Time: {timeLeft}s
-          </div>
-
+        
           {/* Canvas */}
           <div className="w-full flex justify-center">
             <canvas

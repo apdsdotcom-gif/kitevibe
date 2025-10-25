@@ -206,7 +206,8 @@ export default function KiteFlyGamePage() {
 
     ctx.save();
     ctx.scale(dpr, dpr);
-    (ctx as any).imageSmoothingEnabled = true;
+    (ctx as any).imageSmoothingEnabled = false;
+(ctx as any).imageSmoothingQuality = "high";
 
     drawBackground(ctx, w, h);
 

@@ -376,7 +376,7 @@ if (it.kind === "good") {
   const playAgain = () => startGame();
 
   return (
-    <main className="relative overflow-hidden min-h-screen py-20 px-4 bg-[#FDF9F3] text-center">
+    <main className="relative overflow-hidden min-h-screen py-20 px-4 bg-gradient-to-b from-[#E8F6FB] to-[#FDFCF8] text-center">
       <div className="mx-auto max-w-[740px]">
         <h1 className="text-center font-playfair text-3xl md:text-4xl text-[#3a2e2a] mb-1">
           Kite Fly Game

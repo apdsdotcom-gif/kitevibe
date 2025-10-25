@@ -19,8 +19,8 @@ type SpawnedItem = {
 };
 
 const GAME_SECONDS = 60;
-const BASE_WIDTH = 520;
-const BASE_HEIGHT = 320;
+const BASE_WIDTH = 640;
+const BASE_HEIGHT = 360;
 
 const BADGE_THRESHOLDS: Record<BadgeName, number> = {
   "Kite Dreamer": 200,
@@ -100,7 +100,7 @@ export default function KiteFlyGamePage() {
     if (!canvas) return;
     const parent = canvas.parentElement!;
     const parentW = parent.clientWidth;
-    const targetW = Math.min(parentW * 0.95, 520);
+    const targetW = Math.min(parentW * 0.95, 640);
     const targetH = (targetW / BASE_WIDTH) * BASE_HEIGHT;
     const dpr = window.devicePixelRatio || 1;
     dprRef.current = dpr;
@@ -374,7 +374,7 @@ export default function KiteFlyGamePage() {
 
   return (
     <main className="min-h-[calc(100vh-64px)] px-4 pt-20 pb-12 bg-[#FDF9F3]">
-      <div className="mx-auto max-w-[560px]">
+      <div className="mx-auto max-w-[740px]">
         <h1 className="text-center font-playfair text-3xl md:text-4xl text-[#3a2e2a] mb-1">
           Kite Fly Game
         </h1>

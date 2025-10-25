@@ -15,7 +15,7 @@ export default function FramePage() {
   ];
 
   return (
-    <main className="relative overflow-hidden min-h-screen py-20 px-4 bg-gradient-to-b from-[#FFF9F3] to-[#E7F1EE] text-center">
+    <main className="relative overflow-hidden min-h-screen py-20 px-4 bg-gradient-to-b from-[#FDF7F0] to-[#E8EFFA] text-center">
       <div className="relative z-10 mx-auto max-w-6xl">
         <h1 className="font-playfair text-3xl md:text-4xl text-[#3a2e2a] mb-2">
           Kite Frame

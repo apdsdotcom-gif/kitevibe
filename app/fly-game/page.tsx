@@ -98,7 +98,7 @@ export default function KiteFlyGamePage() {
   const parent = canvas.parentElement!;
   const parentW = parent.clientWidth;
   const targetW = Math.min(parentW * 0.95, 640);
-  const aspect = window.innerWidth < 768 ? 1.5 : 1;
+  const aspect = window.innerWidth < 768 ? 2 : 1;
   const targetH = (targetW / BASE_WIDTH) * BASE_HEIGHT * aspect;
   const dpr = window.devicePixelRatio || 1;
   dprRef.current = dpr;

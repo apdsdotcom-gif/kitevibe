@@ -423,7 +423,7 @@ export default function KiteFlyGamePage() {
       <div className="mx-auto max-w-[560px]">
         <h1 className="text-center font-playfair text-3xl md:text-4xl text-[#3a2e2a] mb-1">Kite Fly Game</h1>
         <p className="text-center text-sm text-[#6b5a52] mb-5">
-          Gerakkan layangan kiri–kanan. Tangkap topi, botol, dan VR (+10). Hindari awan (-10). Waktu: 60 detik.
+          Move the kite left-right. Catch the hat, bottle, and VR (+10). Avoid the clouds (-10). Time: 60 seconds.
         </p>
 
         <div className="relative rounded-xl shadow-sm border border-[#eadfce] bg-white/70 p-3">
@@ -487,7 +487,7 @@ export default function KiteFlyGamePage() {
 
         {/* Tips */}
         <div className="mt-4 text-center text-xs text-[#6b5a52]">
-          Desktop: ← → untuk bergerak • Mobile: Seret di atas kanvas
+          Desktop: ← → to move • Mobile: Drag on the canvas
         </div>
       </div>
     </main>

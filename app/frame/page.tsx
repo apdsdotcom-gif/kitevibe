@@ -4,17 +4,19 @@ import { useEffect } from "react";
 
 export default function FramePage() {
   const tweets = [
-    "https://x.com/Zun2025/status/1980611998904971634",
-    "https://twitter.com/Tweet2",
-    "https://twitter.com/Tweet3",
-    "https://twitter.com/Tweet4",
-    "https://twitter.com/Tweet5",
-    "https://twitter.com/Tweet6",
-    "https://twitter.com/Tweet7",
-    "https://twitter.com/Tweet8",
-    "https://twitter.com/Tweet9",
-    "https://twitter.com/Tweet10",
+    "https://x.com/vercel/status/1824092465356994689",
+    "https://x.com/nextjs/status/1816115837029589292",
+    "https://x.com/reactjs/status/1809876543210123456",
+    "https://x.com/tailwindcss/status/1789901234567891234",
+    "https://x.com/typescript/status/1788809876543210000",
+    "https://x.com/openai/status/1823104567893210000",
+    "https://x.com/github/status/1821006549876543210",
+    "https://x.com/microsoft/status/1819503456789000000",
+    "https://x.com/googledevs/status/1817009876543000000",
+    "https://x.com/nodejs/status/1815008765432100000",
   ];
+
+  const normalizeTweetUrl = (url: string) => url.replace("twitter.com", "x.com");
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -28,28 +30,35 @@ export default function FramePage() {
 
   return (
     <main className="relative overflow-hidden min-h-screen py-20 px-4 bg-gradient-to-b from-[#FAF7F2] to-[#EAF3F9] text-center">
-      <div className="mx-auto max-w-5xl">
+      <div className="relative z-10 mx-auto max-w-6xl">
         <h1 className="font-playfair text-3xl md:text-4xl text-[#3a2e2a] mb-2">
           Kite Frame
         </h1>
         <p className="text-[#6b5a52] mb-10 text-sm md:text-base">
-          A showcase of the best creations and thoughts from GO KITE AI community — directly from Twitter.
+          A showcase of the best creations and thoughts from our GO KITE AI community — directly from X.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
           {tweets.map((url, index) => (
             <div
               key={url}
-              className="relative w-full max-w-sm bg-white/80 rounded-xl shadow-sm border border-[#eadfce] p-3 transform transition duration-700 ease-out opacity-0 translate-y-6 animate-fadeIn"
-              style={{ animationDelay: `${index * 0.15}s`, animationFillMode: "forwards" }}
+              className="relative w-full max-w-sm bg-white/80 rounded-xl shadow-sm border border-[#e4d9c8] p-3 transform transition duration-700 ease-out opacity-0 translate-y-6 animate-fadeIn"
+              style={{
+                animationDelay: `${index * 0.1}s`,
+                animationFillMode: "forwards",
+              }}
             >
-              {/* Skeleton shimmer */}
-              <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-[#f4f1ec] via-[#f7f3ee] to-[#f4f1ec] bg-[length:200%_100%] rounded-xl" />
-
-              {/* Tweet embed */}
               <blockquote className="twitter-tweet relative z-10" data-theme="light">
-                <a href={url}>Loading Tweet...</a>
+                <a href={normalizeTweetUrl(url)}>Loading Tweet...</a>
               </blockquote>
+              <a
+                href={normalizeTweetUrl(url)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block mt-3 text-sm text-[#a36a2a] hover:text-[#74461a] transition font-medium"
+              >
+                View on X ↗
+              </a>
             </div>
           ))}
         </div>

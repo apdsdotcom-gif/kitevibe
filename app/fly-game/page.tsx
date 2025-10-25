@@ -19,8 +19,8 @@ type SpawnedItem = {
 };
 
 const GAME_SECONDS = 60;
-const BASE_WIDTH = 700;
-const BASE_HEIGHT = 400;
+const BASE_WIDTH = 520;
+const BASE_HEIGHT = 320;
 
 const BADGE_THRESHOLDS: Record<BadgeName, number> = {
   "Kite Dreamer": 200,

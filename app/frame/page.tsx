@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 
 export default function FramePage() {
   const tweets = [
@@ -15,6 +16,17 @@ export default function FramePage() {
     "https://twitter.com/Tweet9",
     "https://twitter.com/Tweet10",
   ];
+
+  useEffect(() => {
+    // Load Twitter widgets when page mounts
+    const script = document.createElement("script");
+    script.src = "https://platform.twitter.com/widgets.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   return (
     <main className="relative overflow-hidden min-h-screen py-20 px-4 bg-gradient-to-b from-[#FAF7F2] to-[#EAF3F9] text-center">
@@ -34,18 +46,19 @@ export default function FramePage() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="w-full max-w-sm bg-white/80 rounded-xl shadow-sm border border-[#eadfce] p-3"
+              className="relative w-full max-w-sm bg-white/80 rounded-xl shadow-sm border border-[#eadfce] p-3"
             >
-              <blockquote className="twitter-tweet" data-theme="light">
+              {/* Skeleton shimmer */}
+              <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-[#f4f1ec] via-[#f7f3ee] to-[#f4f1ec] bg-[length:200%_100%] rounded-xl" />
+
+              {/* Tweet embed */}
+              <blockquote className="twitter-tweet relative z-10" data-theme="light">
                 <a href={url}>Loading Tweet...</a>
               </blockquote>
             </motion.div>
           ))}
         </div>
       </div>
-
-      {/* load Twitter widget */}
-      <script async src="https://platform.twitter.com/widgets.js" charSet="utf-8"></script>
     </main>
   );
 }

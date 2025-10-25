@@ -17,7 +17,7 @@ export default function Hero() {
 
       <div className="mx-auto max-w-4xl px-4 text-center py-20 md:py-24">
         <h1 className="h-playfair text-5xl md:text-7xl font-extrabold tracking-tight">KITE VIBE</h1>
-        <p className="h-playfair mt-3 text-xl md:text-2xl tracking-widest">KITE AI COMMUNITY</p>
+        <p className="h-playfair mt-3 text-xl md:text-2xl tracking-widest">Go KITE AI COMMUNITY Not Official</p>
         <p className="mt-6 text-lg md:text-xl">Catch the vibe, Create. Fly. Explore.</p>
         <div className="mt-8">
           <a href="#ideas" className="btn-primary">Explore</a>

@@ -2,14 +2,14 @@
 
 export default function AboutPage() {
   return (
-    <main className="relative overflow-hidden min-h-screen py-20 px-6 bg-gradient-to-b from-[#FAF7F2] to-[#EAF3F9] text-center text-[#3a2e2a]">
+    <main className="relative overflow-hidden min-h-screen py-20 px-6 bg-gradient-to-b from-[#FDF8F4] to-[#E8F2EC] text-center text-[#3a2e2a]">
       <div className="max-w-3xl mx-auto">
         <h1 className="font-playfair text-4xl mb-6">🪁 About Kite Vibe</h1>
 
         <p className="text-base leading-relaxed mb-4">
           <strong>Kite Vibe</strong> is a creative community inspired by{" "}
           <a
-            href="http://gokite.ai"
+            href="https://gokite.ai"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[#B17C4A] hover:text-[#8C5E2D] underline"
@@ -82,6 +82,17 @@ export default function AboutPage() {
           </a>
         </div>
       </div>
+      {/* Animated clouds */}
+      <img src="/images/cloud-1.svg" alt="" className="cloud absolute left-4 top-6 w-28" />
+      <img src="/images/cloud-2.svg" alt="" className="cloud absolute left-1/4 top-24 w-24" />
+      <img src="/images/cloud-1.svg" alt="" className="cloud absolute right-6 top-8 w-32" />
+      <img src="/images/cloud-2.svg" alt="" className="cloud absolute right-1/4 top-24 w-24" />
+      <img src="/images/cloud-1.svg" alt="" className="cloud absolute right-10 bottom-8 w-40" />
+      <img src="/images/cloud-1.svg" alt="" className="cloud absolute left-10 bottom-8 w-40 opacity-70" />
+
+      {/* Kites */}
+      <img src="/images/kite-left.svg" alt="" className="kite absolute left-6 md:left-12 top-40 w-20" />
+      <img src="/images/kite-right.svg" alt="" className="kite absolute right-6 md:right-12 top-40 w-20 [animation-duration:9s]" />
     </main>
   );
 }

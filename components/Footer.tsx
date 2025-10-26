@@ -8,7 +8,7 @@ export default function Footer() {
           <a href="/blog" className="footer-link">Blog</a>
           <a href="/contact" className="footer-link">Contact</a>
         </nav>
-        <p className="text-xs opacity-90">© 2025 Kite Vibe Created By Agus Pamungkas DS For | A gokite ai Community</p>
+        <p className="text-xs opacity-90">© 2025 Kite Vibe Created By <a href="https://x.com/Agus_pamungkasS" target="_blank" rel="noopener noreferrer">Agus Pamungkas DS</a> For | A gokite ai Community</p>
       </div>
     </footer>
   );

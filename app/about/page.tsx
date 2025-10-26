@@ -1,22 +1,87 @@
-export default function AboutPage(){
+"use client";
+
+export default function AboutPage() {
   return (
-    <main className="mx-auto max-w-4xl px-4 py-28">
-      <h1 className="h-playfair text-4xl font-bold">About Kite Vibe</h1>
-      <p className="mt-6 leading-relaxed">
-        Kite Vibe is a creative community from gokite.ai.
+    <main className="relative overflow-hidden min-h-screen py-20 px-6 bg-gradient-to-b from-[#FAF7F2] to-[#EAF3F9] text-center text-[#3a2e2a]">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="font-playfair text-4xl mb-6">🪁 About Kite Vibe</h1>
 
-This website is unofficial, but it will be a platform for ideas, collaboration, and community work—with a warm, classic, and modern retro feel.
+        <p className="text-base leading-relaxed mb-4">
+          <strong>Kite Vibe</strong> is a creative community inspired by{" "}
+          <a
+            href="http://gokite.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#B17C4A] hover:text-[#8C5E2D] underline"
+          >
+            gokite.ai
+          </a>
+          . This website is <em>unofficial</em>, but serves as a platform for
+          ideas, collaboration, and community creations — combining a warm,
+          classic, and modern retro aesthetic.
+        </p>
 
-The goal is to contribute and provide a different feel through interactions like the ones already available:
+        <p className="text-base leading-relaxed mb-6">
+          Our goal is to contribute and offer a unique experience through
+          interactive features such as:
+        </p>
 
-Kite Hat Studio: Created to produce hats with the Gokite logo that you can use for profile photos or post to show your community membership.
-Kite Fly Game: A light game just for fun and made more interesting by the badges.
-Kite Frame: This is a frame featuring top Gokite community members who have done amazing work on X and Discord.
+        <ul className="text-left inline-block text-sm md:text-base leading-relaxed mb-8 space-y-3">
+          <li>
+            🎩 <strong>Kite Hat Studio</strong> — Create and customize hats
+            featuring the Gokite logo. Perfect for profile photos or showing
+            your community spirit.
+          </li>
+          <li>
+            🪁 <strong>Kite Fly Game</strong> — A light, casual game made more
+            fun with community badges.
+          </li>
+          <li>
+            🖼️ <strong>Kite Frame</strong> — A showcase of top Gokite community
+            members who have made amazing contributions on X and Discord.
+          </li>
+        </ul>
 
-Build with the community, Fly Together, Create Together, and we'd love to hear from you all.
+        <p className="italic text-[#5a4b44] mb-6">
+          Build with the community. Fly together. Create together.
+        </p>
 
-If you have interesting ideas to implement or suggestions, you can contact me on Twitter : <a href="https://x.com/Agus_pamungkasS" target="_blank" rel="noopener noreferrer">Agus Pamungkas DS</a>.
-      </p>
+        <p className="mb-8">
+          We’d love to hear from you! If you have creative ideas or suggestions,
+          feel free to reach out via{" "}
+          <a
+            href="https://x.com/Agus_pamungkasS"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#B17C4A] hover:text-[#8C5E2D] underline"
+          >
+            Twitter: Agus Pamungkas DS
+          </a>
+          .
+        </p>
+
+        <div className="text-xs text-[#7c6a5d] space-y-1">
+          <p>
+            VR, Bottle, Hat images, and other visual assets are sourced from:
+          </p>
+          <a
+            href="https://drive.google.com/drive/folders/1QzBP9QjNje1GbX5Yad6QuJim1TwDpFDD"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block hover:underline text-[#B17C4A]"
+          >
+            Google Drive Folder 1
+          </a>
+          <a
+            href="https://drive.google.com/drive/u/0/folders/1n3SvHwR2_RrCng5hUZAlqPXo5vrjaRvg"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block hover:underline text-[#B17C4A]"
+          >
+            Google Drive Folder 2
+          </a>
+        </div>
+      </div>
     </main>
   );
 }
